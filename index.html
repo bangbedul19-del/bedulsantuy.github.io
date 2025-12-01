@@ -53,7 +53,7 @@ function run() {
         } catch (e) {
           console.warn("Blocked:", e);
         }
-      }, 0); // TRIK: 0ms jauh lebih efektif dari 50–150ms
+      }, 150); // TRIK: 0ms jauh lebih efektif dari 50–150ms
     });
   });
 }
