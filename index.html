@@ -2,36 +2,38 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Advanced Safe Address Bar Race Detector</title>
+  <title>In-App WebView Race Tester (Safe)</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 900px; }
-    h1 { margin-bottom: 0; }
+    body { font-family: system-ui, -apple-system, Arial, sans-serif; padding: 16px; max-width: 900px; margin: auto; }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    h2 { font-size: 18px; margin-top: 20px; }
     small { color: #777; }
     button { padding: 8px 14px; font-size: 14px; cursor: pointer; margin: 4px 4px 4px 0; }
     input[type="number"] { width: 80px; }
-    #result { margin-top: 16px; padding: 12px; border-radius: 6px; }
+    #env { margin: 10px 0; padding: 8px; border-radius: 6px; background: #f5f5f5; font-size: 13px; }
+    #result { margin-top: 10px; padding: 10px; border-radius: 6px; font-size: 14px; }
     .ok { background: #e3f8e5; border: 1px solid #4caf50; color: #256029; }
     .warn { background: #fff3cd; border: 1px solid #ff9800; color: #7a5a00; }
     .err { background: #fdecea; border: 1px solid #f44336; color: #8b1c13; }
     .info { background: #e3f2fd; border: 1px solid #2196f3; color: #0d47a1; }
-    pre { background:#f5f5f5; padding:8px; border-radius:4px; max-height:220px; overflow:auto; font-size:12px; }
-    .section { margin-top: 20px; padding-top: 12px; border-top: 1px solid #ddd; }
+    pre { background:#f5f5f5; padding:8px; border-radius:4px; max-height:220px; overflow:auto; font-size:11px; }
     label { font-size: 13px; }
+    .section { margin-top: 18px; padding-top: 10px; border-top: 1px solid #ddd; }
+    code { background:#f0f0f0; padding:2px 4px; border-radius:4px; }
   </style>
 </head>
 <body>
 
-<h1>Advanced Safe Address Bar Race Detector</h1>
-<small>
-  Alat ini tidak melakukan spoofing atau phishing. Hanya menguji perilaku <code>window.open</code>, navigasi,
-  dan apakah window masih writable setelah navigasi dimulai (indikasi race-condition).
-</small>
+<h1>In-App WebView Race Tester (Safe)</h1>
+<small>Untuk TikTok / Instagram / Facebook in-app browser — tanpa spoofing, tanpa phishing.</small>
+
+<div id="env"></div>
 
 <div class="section">
-  <h2>Mode 1: Basic Race Test (about:blank → final.html)</h2>
+  <h2>Mode 1 – Basic Race Test (about:blank → final.html)</h2>
   <p>
     <label>
-      Delay sebelum navigasi dimulai:
+      Delay sebelum navigasi:
       <input id="delayNav" type="number" value="50"> ms
     </label>
     &nbsp;
@@ -41,51 +43,58 @@
     </label>
   </p>
   <button onclick="runRaceTest()">Run Basic Race Test</button>
+  <p style="font-size:12px;color:#555;">
+    Cara lihat rentan/tidak: di popup/tab baru, cek apakah URL sudah <code>final.html</code> tapi kontennya <strong>Race Detector Injection</strong>.
+  </p>
 </div>
 
 <div class="section">
-  <h2>Mode 2: About:blank → Inject → Redirect (simulasi flow Meta, tapi aman)</h2>
-  <p>
-    Di mode ini:
-  </p>
-  <ol>
-    <li>Buka tab baru dengan <code>about:blank</code></li>
-    <li>Inject konten ke about:blank</li>
-    <li>Sedikit delay, lalu redirect ke <code>final.html</code></li>
-  </ol>
+  <h2>Mode 2 – About:blank → Inject → Redirect</h2>
   <p>
     <label>
-      Delay sebelum inject:
+      Delay inject:
       <input id="delayInject2" type="number" value="30"> ms
     </label>
     &nbsp;
     <label>
-      Delay sebelum redirect:
+      Delay redirect:
       <input id="delayRedirect2" type="number" value="250"> ms
     </label>
   </p>
   <button onclick="runAboutBlankRedirectTest()">Run About:blank → Redirect Test</button>
-</div>
-
-<div class="section">
-  <h2>Mode 3: Sweep Timing (uji beberapa kombinasi delay otomatis)</h2>
-  <p>
-    Mode ini akan mencoba beberapa kombinasi delay untuk melihat apakah ada kombinasi waktu
-    yang membuat window tetap writable setelah navigasi dimulai.
+  <p style="font-size:12px;color:#555;">
+    Mode ini mirip flow asli: about:blank diisi dulu, baru redirect ke <code>final.html</code>. Lihat apakah UI & konten sinkron.
   </p>
-  <button onclick="runSweep()">Run Timing Sweep</button>
 </div>
 
 <div class="section">
-  <h2>Hasil & Log</h2>
+  <h2>Result & Log</h2>
   <div id="result" class="info">
     Belum ada tes yang dijalankan.
   </div>
-  <h3>Console Log (dari script)</h3>
+  <h3 style="font-size:13px;margin-top:10px;">Log Script</h3>
   <pre id="logBox"></pre>
 </div>
 
 <script>
+function detectEnv() {
+  const ua = navigator.userAgent || "";
+  let env = "Kemungkinan browser biasa.";
+  if (/FBAN|FBAV|FB_IAB/.test(ua)) env = "Sepertinya ini Facebook / Messenger in-app WebView.";
+  else if (/Instagram/.test(ua)) env = "Sepertinya ini Instagram in-app WebView.";
+  else if (/TikTok/.test(ua)) env = "Sepertinya ini TikTok in-app WebView.";
+  else if (/Line\//.test(ua)) env = "Sepertinya ini LINE in-app WebView.";
+  else if (/Twitter|X11;.*Twitter/.test(ua)) env = "Sepertinya ini X/Twitter in-app WebView.";
+
+  const envDiv = document.getElementById('env');
+  envDiv.innerHTML = `
+    <strong>Deteksi lingkungan:</strong><br>
+    ${env}<br>
+    <span style="font-size:11px;color:#777;">UA: ${ua}</span>
+  `;
+}
+detectEnv();
+
 function log(msg) {
   console.log(msg);
   const box = document.getElementById('logBox');
@@ -100,48 +109,41 @@ function setResult(msg, cls) {
 }
 
 /**
- * MODE 1:
- * Basic Race Test: about:blank -> final.html, lalu coba document.write setelah navigasi dimulai.
+ * MODE 1: about:blank -> final.html lalu coba document.write
  */
 function runRaceTest() {
   const delayNav = parseInt(document.getElementById('delayNav').value, 10) || 50;
   const delayWrite = parseInt(document.getElementById('delayWrite').value, 10) || 120;
 
-  setResult("Menjalankan Basic Race Test... pastikan popup tidak diblokir.", "info");
+  setResult("Menjalankan Basic Race Test... pastikan popup tidak diblokir oleh in-app browser.", "info");
   log("=== Basic Race Test ===");
   log("delayNav=" + delayNav + "ms, delayWrite=" + delayWrite + "ms");
 
-  let win = window.open("https://www.google.com", "_blank");
+  let win = window.open("about:blank", "_blank");
   if (!win) {
-    setResult("Popup diblokir oleh browser. Izinkan popup untuk situs ini lalu coba lagi.", "err");
+    setResult("Popup diblokir oleh WebView. Coba aktifkan 'Allow popups' atau test mode lain.", "err");
     log("Popup blocked.");
     return;
   }
 
-  log("Window baru dibuka sebagai about:blank.");
+  log("Window baru dibuka sebagai about:blank (Mode 1).");
 
-        setTimeout(() => {
-          try {
-            win.document.write(`
-  <h1>This is not Google!</h1>
-<button onclick="
-  let username = prompt('Enter your username');
-  let password = prompt('Enter your password');
-  alert('Your creds:\\nUsername: ' + username + '\\nPassword: ' + password);
-">Click me</button>
-            `);
-            win.document.close();
-          } catch (e) {
-            console.warn("Blocked by browser protections:", e);
-          }
-        }, 50);
-      }
+  // Step 1: mulai navigasi ke final.html
+  setTimeout(() => {
+    try {
+      // final.html harus kamu host di server yang sama
+      win.location.href = "final.html";
+      log("Navigasi ke final.html dimulai (Mode 1).");
+    } catch (e) {
+      log("Gagal set location ke final.html (Mode 1): " + e);
+    }
+  }, delayNav);
 
   // Step 2: coba document.write setelah navigasi dimulai
   setTimeout(() => {
     if (win.closed) {
-      setResult("Window test sudah tertutup sebelum tes selesai.", "err");
-      log("Window sudah tertutup.");
+      setResult("Window test sudah tertutup sebelum tes selesai (Mode 1).", "err");
+      log("Window sudah tertutup (Mode 1).");
       return;
     }
 
@@ -149,10 +151,8 @@ function runRaceTest() {
     try {
       win.document.write(`
         <h1 style="color:red;">Race Detector Injection (Mode 1)</h1>
-        <p>Jika kamu melihat pesan ini <strong>setelah address bar menunjukkan final.html</strong>,
-        berarti window masih writable setelah navigasi dimulai.</p>
-        <p>Ini indikasi potensi race-condition seperti address bar desync pada kondisi tertentu
-        (misalnya WebView lambat / error-state).</p>
+        <p>Jika kamu melihat pesan ini <strong>sementara address bar sudah menunjukkan final.html</strong>, berarti window masih writable setelah navigasi dimulai.</p>
+        <p>Ini indikasi <em>potensi</em> race-condition seperti address bar desync pada WebView tertentu.</p>
       `);
       win.document.close();
       injected = true;
@@ -164,30 +164,25 @@ function runRaceTest() {
     if (injected) {
       setResult(`
         <strong>HASIL (Mode 1):</strong><br>
-        ⚠️ Window masih <code>writable</code> setelah navigasi dimulai.<br><br>
-        <strong>Interpretasi:</strong><br>
-        - Implementasi ini mengizinkan <code>document.write()</code> setelah panggilan <code>location.href</code>.<br>
-        - Pada WebView tertentu (lambat/bermasalah), hal ini <em>berpotensi</em> digabung
-          dengan UI yang update lebih awal dan menyebabkan address bar desync.<br><br>
-        <em>Untuk menguji apakah ada desync address bar, kamu harus AMATI manual: apakah URL di address bar sudah jadi final.html saat konten ini muncul?</em>
+        ⚠️ <code>document.write()</code> masih bisa dilakukan setelah navigasi dimulai.<br><br>
+        <strong>Langkah berikutnya (manual):</strong><br>
+        - Lihat popup/tab baru di WebView.<br>
+        - Jika URL di address bar sudah <code>final.html</code> tapi konten adalah "Race Detector Injection",<br>
+          itu artinya ada <strong>UI desynchronization</strong> seperti kasus Meta.<br>
+        - Jika URL masih about:blank ketika konten injection muncul, WebView lebih aman (tidak spoof).<br>
       `, "warn");
     } else {
       setResult(`
         <strong>HASIL (Mode 1):</strong><br>
-        ✅ Browser/WebView tampaknya <strong>memblok</strong> <code>document.write()</code>
-        setelah navigasi dimulai.<br><br>
-        <strong>Interpretasi:</strong><br>
-        - Ini perilaku yang lebih aman terhadap race-condition seperti PoC yang dulu kamu gunakan.<br>
-        - Walau bukan jaminan 100% bebas bug, minimal mekanisme dasar race ini tidak tersedia.<br>
+        ✅ WebView tampaknya <strong>memblok</strong> <code>document.write()</code> setelah navigasi dimulai.<br><br>
+        Ini perilaku yang lebih aman terhadap teknik race-condition address bar.
       `, "ok");
     }
   }, delayWrite);
 }
 
 /**
- * MODE 2:
- * About:blank -> inject -> redirect
- * Mirip flow: buka blank, isi konten, lalu redirect (semua masih aman dan dummy).
+ * MODE 2: about:blank -> inject -> redirect
  */
 function runAboutBlankRedirectTest() {
   const delayInject = parseInt(document.getElementById('delayInject2').value, 10) || 30;
@@ -199,20 +194,20 @@ function runAboutBlankRedirectTest() {
 
   let win = window.open("about:blank", "_blank");
   if (!win) {
-    setResult("Popup diblokir oleh browser. Izinkan popup untuk situs ini lalu coba lagi.", "err");
-    log("Popup blocked.");
+    setResult("Popup diblokir oleh WebView. Coba mode lain atau setting pop-up.", "err");
+    log("Popup blocked (Mode 2).");
     return;
   }
 
   log("Window baru dibuka sebagai about:blank (Mode 2).");
 
-  // Step 1: inject konten ke about:blank
+  // Step 1: inject konten
   setTimeout(() => {
     try {
       win.document.write(`
         <h1 style="color:blue;">Mode 2: About:blank Injected</h1>
         <p>Ini konten dari <strong>about:blank</strong> sebelum redirect.</p>
-        <p>Perhatikan nanti: apakah setelah redirect ke final.html, address bar dan konten selalu sinkron?</p>
+        <p>Perhatikan: setelah redirect ke final.html, apakah URL & konten selalu sinkron?</p>
       `);
       win.document.close();
       log("Konten berhasil diinject ke about:blank (Mode 2).");
@@ -225,90 +220,11 @@ function runAboutBlankRedirectTest() {
   setTimeout(() => {
     try {
       win.location.href = "final.html";
-      log("Redirect dari about:blank ke final.html dimulai (Mode 2).");
+      log("Redirect ke final.html dimulai (Mode 2).");
     } catch (e) {
       log("Gagal redirect ke final.html (Mode 2): " + e);
     }
   }, delayRedirect);
-}
-
-/**
- * MODE 3:
- * Timing sweep (mencoba beberapa kombinasi delay secara otomatis).
- */
-function runSweep() {
-  setResult("Menjalankan Timing Sweep (Mode 3)...", "info");
-  log("=== Timing Sweep (Mode 3) ===");
-
-  // daftar kombinasi delay [delayNav, delayWrite]
-  const combos = [
-    [30, 80],
-    [50, 120],
-    [80, 160],
-    [100, 200],
-    [150, 250],
-    [200, 300]
-  ];
-
-  let index = 0;
-
-  function runNext() {
-    if (index >= combos.length) {
-      setResult(`
-        <strong>Timing Sweep selesai.</strong><br>
-        Lihat log di bawah untuk melihat kombinasi mana (jika ada) yang masih mengizinkan <code>document.write</code>
-        setelah navigasi dimulai.
-      `, "info");
-      return;
-    }
-
-    const [delayNav, delayWrite] = combos[index++];
-    log("--- Kombinasi: delayNav=" + delayNav + "ms, delayWrite=" + delayWrite + "ms ---");
-
-    let win = window.open("about:blank", "_blank");
-    if (!win) {
-      log("Popup diblokir pada kombinasi ini. Sweep dihentikan.");
-      setResult("Popup diblokir oleh browser. Izinkan popup untuk situs ini lalu coba lagi.", "err");
-      return;
-    }
-
-    setTimeout(() => {
-      try {
-        win.location.href = "final.html";
-        log("Navigasi ke final.html dimulai (Mode 3).");
-      } catch (e) {
-        log("Gagal set location (Mode 3): " + e);
-      }
-    }, delayNav);
-
-    setTimeout(() => {
-      if (win.closed) {
-        log("Window sudah tertutup sebelum document.write (Mode 3).");
-        runNext();
-        return;
-      }
-      let injected = false;
-      try {
-        win.document.write(`
-          <h1 style="color:red;">Race Detector Injection (Mode 3)</h1>
-          <p>Kombinasi delayNav=${delayNav}ms, delayWrite=${delayWrite}ms.</p>
-        `);
-        win.document.close();
-        injected = true;
-        log("document.write() BERHASIL pada kombinasi ini (Mode 3).");
-      } catch (e) {
-        log("document.write() DIBLOKIR pada kombinasi ini (Mode 3): " + e);
-      }
-
-      // Tutup window supaya tidak menumpuk
-      try { win.close(); } catch (e) {}
-
-      // lanjut ke kombinasi berikut
-      setTimeout(runNext, 200);
-    }, delayWrite);
-  }
-
-  runNext();
 }
 </script>
 
