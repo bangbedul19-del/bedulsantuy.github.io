@@ -111,7 +111,7 @@ function runRaceTest() {
   log("=== Basic Race Test ===");
   log("delayNav=" + delayNav + "ms, delayWrite=" + delayWrite + "ms");
 
-  let win = window.open("https://www.google.com", "_blank");
+  let win = window.open("about:blank", "_blank");
   if (!win) {
     setResult("Popup diblokir oleh browser. Izinkan popup untuk situs ini lalu coba lagi.", "err");
     log("Popup blocked.");
