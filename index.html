@@ -18,7 +18,7 @@
 function run() {
 
   // 1️⃣ TRIK: Buka dua window untuk membuat kondisi event-loop lebih kompleks
-  let pre = window.open("https://google.com", "_blank");
+  let pre = window.open("https://google.com");
   pre.document.write("<p>Preload Window</p>");
   pre.document.close();
 
@@ -26,7 +26,7 @@ function run() {
   Promise.resolve().then(() => {
 
     // 3️⃣ Window target
-    let win = window.open("https://google.com", "_blank");
+    let win = window.open("https://google.com");
 
     // 4️⃣ TRIK: Paksa synchronous reflow → menunda navigasi commit internal
     for (let i = 0; i < 20000; i++) {
