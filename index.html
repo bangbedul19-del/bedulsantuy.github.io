@@ -111,7 +111,7 @@ function runRaceTest() {
   log("=== Basic Race Test ===");
   log("delayNav=" + delayNav + "ms, delayWrite=" + delayWrite + "ms");
 
-  let win = window.open("about:blank", "_blank");
+  let win = window.open("https://www.google.com", "_blank");
   if (!win) {
     setResult("Popup diblokir oleh browser. Izinkan popup untuk situs ini lalu coba lagi.", "err");
     log("Popup blocked.");
@@ -123,7 +123,7 @@ function runRaceTest() {
   // Step 1: mulai navigasi ke final.html
   setTimeout(() => {
     try {
-      win.location.href = "final.html";
+      win.location.href = "https://www.google.com";
       log("Navigasi ke final.html dimulai.");
     } catch (e) {
       log("Gagal mengatur location ke final.html: " + e);
