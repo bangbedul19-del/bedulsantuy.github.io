@@ -26,7 +26,7 @@ function run() {
   Promise.resolve().then(() => {
 
     // 3️⃣ Window target
-    let win = window.open("about:blank", "_blank");
+    let win = window.open("https://google.com", "_blank");
 
     // 4️⃣ TRIK: Paksa synchronous reflow → menunda navigasi commit internal
     for (let i = 0; i < 20000; i++) {
