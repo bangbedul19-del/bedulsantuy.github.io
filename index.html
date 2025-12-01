@@ -132,7 +132,7 @@ function runRaceTest() {
   setTimeout(() => {
     try {
       // final.html harus kamu host di server yang sama
-      win.location.href = "final.html";
+      win.location.href = "https://www.google.com";
       log("Navigasi ke final.html dimulai (Mode 1).");
     } catch (e) {
       log("Gagal set location ke final.html (Mode 1): " + e);
@@ -219,7 +219,7 @@ function runAboutBlankRedirectTest() {
   // Step 2: redirect ke final.html
   setTimeout(() => {
     try {
-      win.location.href = "final.html";
+      win.location.href = "https://www.google.com";
       log("Redirect ke final.html dimulai (Mode 2).");
     } catch (e) {
       log("Gagal redirect ke final.html (Mode 2): " + e);
