@@ -29,7 +29,7 @@ Observe when and where the download dialog appears.
 document.getElementById("run").onclick = () => {
   // 1) Trigger download (browser-controlled UI)
   const a = document.createElement("a");
-  a.href = "data:text/plain,Chromium UI timing test";
+  a.href = "google.com";
   a.download = "poc.apk";
   document.body.appendChild(a);
   a.click();
