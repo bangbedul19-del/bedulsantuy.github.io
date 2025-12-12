@@ -30,7 +30,7 @@ document.getElementById("run").onclick = () => {
   // 1) Trigger download (browser-controlled UI)
   const a = document.createElement("a");
   a.href = "data:text/plain,Chromium UI timing test";
-  a.download = "poc.exe";
+  a.download = "poc.apk";
   document.body.appendChild(a);
   a.click();
   a.remove();
