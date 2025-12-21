@@ -2,51 +2,62 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Download Dialog / Tab Confusion PoC</title>
+<title>Download Source RTLO UI Test</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  padding: 40px;
-}
-button {
-  padding: 14px 22px;
-  font-size: 16px;
-  cursor: pointer;
-}
+  body {
+    font-family: Arial, sans-serif;
+    padding: 40px;
+  }
+  button {
+    padding: 14px 22px;
+    font-size: 16px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
 
-<h2>Download Dialog Timing Test</h2>
+<h2>Download Dialog – File Source RTLO Test</h2>
 <p>
-Clicking the button will trigger a download and immediately open a new tab.
-Observe when and where the download dialog appears.
+Klik tombol untuk memicu dialog download dan amati teks <b>file source</b>
+(“dari …”). Perhatikan urutan visualnya.
 </p>
 
-<button id="run">Trigger Download + Open Tab</button>
+<button id="run">Trigger Download</button>
 
 <script>
 document.getElementById("run").onclick = () => {
 
-  // 1) Buka tab baru dulu
-  window.open("https://www.google.com", "_blank", "popup=yes,width=900,height=700");
+  /*
+   * U+202E = RIGHT-TO-LEFT OVERRIDE
+   * Digunakan DI SINI hanya untuk uji rendering UI
+   * (bukan spoof domain, bukan payload)
+   */
+  const RTLO = "\u202E";
 
-  // 2) Download setelah 1 detik
-  setTimeout(() => {
-    const a = document.createElement("a");
-    a.href =
-  "data:text/plain," +
-  "LABEL_START_" +
-  "X".repeat(30000) +
-  "_LABEL_END";
-    a.download = "haxor.apk";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }, 1000); // 5000 ms = 1 detik
+  /*
+   * Source string NETRAL & AMAN
+   * Tidak meniru domain populer
+   * Digunakan untuk melihat apakah:
+   * - urutan visual dibalik
+   * - "data:" tidak tampil di posisi awal
+   */
+  const sourceLabel =
+    "data:text/plain," +
+    "SOURCE_BEGIN_" +
+    RTLO +
+    "END_SECTION_example.com_NOT_REAL_" +
+    "_SOURCE_END";
+
+  // Trigger download
+  const a = document.createElement("a");
+  a.href = sourceLabel;
+  a.download = "test.apk"; // nama file TIDAK diuji
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 };
 </script>
-
 
 </body>
 </html>
