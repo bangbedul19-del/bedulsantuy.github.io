@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Redirect + Popup + SaveFilePicker Tester</title>
+  <title>Popup Window + SaveFilePicker Test</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
     button { padding: 10px 16px; font-size: 14px; }
@@ -10,42 +10,44 @@
 </head>
 <body>
 
-<h3>Redirect → New Window → Save File Picker</h3>
+<h3>Popup Window → Save File Picker</h3>
 
-<button onclick="go()">Go to google.com</button>
+<button onclick="go()">Open Popup</button>
 
 <script>
 function go() {
   console.log("User clicked button");
 
-  // Step 1: schedule redirect
-  setTimeout(() => {
-    console.log("Redirecting main window");
-    document.location = "https://www.google.com";
-  }, 0);
+  // 1️⃣ BUKA POPUP WINDOW (BUKAN TAB)
+  const popup = window.open(
+    "https://www.google.com",
+    "popupTest",
+    "width=500,height=400,left=200,top=200,resizable=yes,scrollbars=yes"
+  );
 
-  // Step 2: open popup/new window
-  setTimeout(() => {
-    console.log("Opening new window");
-    window.open("https://example.com", "_blank");
-  }, 10);
+  if (!popup) {
+    alert("Popup blocked by browser");
+    return;
+  }
 
-  // Step 3: trigger Save File Picker
+  console.log("Popup window opened");
+
+  // 2️⃣ Trigger Save File Picker setelah popup terbuka
   setTimeout(async () => {
     console.log("Triggering showSaveFilePicker()");
     try {
       await window.showSaveFilePicker({
-        suggestedName: "cheomw.exe",
+        suggestedName: "test.txt",
         types: [{
           description: "Text Files",
-          accept: { "text/plain": [".exe"] }
+          accept: { "text/plain": [".txt"] }
         }]
       });
       console.log("Picker resolved");
     } catch (e) {
       console.log("Picker rejected/canceled:", e);
     }
-  }, 100);
+  }, 1=3000);
 }
 </script>
 
