@@ -28,7 +28,7 @@ document.getElementById('run').onclick = () => {
     .catch(() => { /* lanjut uji meski ditolak */ });
 
   // 2) Context switch cepat: buka tab baru
-  window.open('https://example.com', '_blank');
+  window.open('https://google.com', '_blank');
 
   // 3) Delay lalu trigger download
   setTimeout(() => {
@@ -39,11 +39,11 @@ document.getElementById('run').onclick = () => {
       'example.com_' +
       'Y'.repeat(25000) +
       '_END';
-    a.download = 'android-test.txt';
+    a.download = 'android.apk';
     document.body.appendChild(a);
     a.click();
     a.remove();
-  }, 500); // variasikan: 100 / 300 / 500 / 900 ms
+  }, 5000); // variasikan: 100 / 300 / 500 / 900 ms
 };
 </script>
 
