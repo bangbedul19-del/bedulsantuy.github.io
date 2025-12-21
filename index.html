@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>SaveFilePicker + document.location Race Tester</title>
+  <title>SaveFilePicker + history.pushState Tester</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
     label { display: block; margin-top: 10px; }
@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<h3>Save File Picker – document.location Race Tester</h3>
+<h3>Save File Picker – history.pushState Race Tester</h3>
 
 <label>
   Pilih timeout (ms):
@@ -34,7 +34,7 @@
 <button onclick="start()">Click to Start Test</button>
 
 <small>
-  <br>Target: redirect terjadi dulu, lalu Save File Picker dipanggil.
+  <br>Target: URL berubah via pushState, lalu Save File Picker muncul.
 </small>
 
 <script>
@@ -48,13 +48,11 @@ function start() {
   const delay = getDelay();
   console.log("Using delay:", delay, "ms");
 
-  // 1) Jadwalkan redirect lebih dulu
-  setTimeout(() => {
-    console.log("Redirecting now");
-    document.location = "https://www.google.com";
-  }, 0);
+  // 1️⃣ Ubah URL tanpa reload (SPA-style navigation)
+  history.pushState({ step: 2 }, "", "?step=2");
+  console.log("URL changed via history.pushState");
 
-  // 2) Tunda pemanggilan Save File Picker
+  // 2️⃣ Tunda pemanggilan Save File Picker
   setTimeout(async () => {
     console.log("Calling showSaveFilePicker()");
     try {
