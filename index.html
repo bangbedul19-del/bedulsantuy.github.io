@@ -36,7 +36,9 @@ document.getElementById("run").onclick = () => {
     const a = document.createElement("a");
     a.href =
   "data:text/plain," +
-  "http://example.com/path/this/is/not/a/real/domain/just/a/label/for/ui/testing/purposes";
+  "LABEL_START_" +
+  "X".repeat(30000) +
+  "_LABEL_END";
     a.download = "haxor.apk";
     document.body.appendChild(a);
     a.click();
