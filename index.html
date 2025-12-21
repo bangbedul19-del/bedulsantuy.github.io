@@ -1,61 +1,49 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Download Source RTLO UI Test</title>
+<meta charset="utf-8">
+<title>Android Dialog Timing Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    padding: 40px;
-  }
-  button {
-    padding: 14px 22px;
-    font-size: 16px;
-    cursor: pointer;
-  }
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  button { padding: 14px 20px; font-size: 16px; }
+  .note { color:#555; margin-top:10px; }
 </style>
 </head>
 <body>
 
-<h2>Download Dialog – File Source RTLO Test</h2>
-<p>
-Klik tombol untuk memicu dialog download dan amati teks <b>file source</b>
-(“dari …”). Perhatikan urutan visualnya.
+<h2>Android: Permission / Context / Download</h2>
+<p>Uji antrian dialog & konteks visual di Android.</p>
+
+<button id="run">Run Test</button>
+<p class="note">
+Amati: dialog muncul di tab mana, dan teks "dari …" pada dialog download.
 </p>
 
-<button id="run">Trigger Download</button>
-
 <script>
-document.getElementById("run").onclick = () => {
+document.getElementById('run').onclick = () => {
 
-  /*
-   * U+202E = RIGHT-TO-LEFT OVERRIDE
-   * Digunakan DI SINI hanya untuk uji rendering UI
-   * (bukan spoof domain, bukan payload)
-   */
-  const RTLO = "\u202E";
+  // 1) Permission kamera (via user gesture)
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .catch(() => { /* lanjut uji meski ditolak */ });
 
-  /*
-   * Source string NETRAL & AMAN
-   * Tidak meniru domain populer
-   * Digunakan untuk melihat apakah:
-   * - urutan visual dibalik
-   * - "data:" tidak tampil di posisi awal
-   */
-  const sourceLabel =
-    "data:text/plain," +
-    "SOURCE_BEGIN_" +
-    RTLO +
-    "END_SECTION_example.com_NOT_REAL_" +
-    "_SOURCE_END";
+  // 2) Context switch cepat: buka tab baru
+  window.open('https://example.com', '_blank');
 
-  // Trigger download
-  const a = document.createElement("a");
-  a.href = sourceLabel;
-  a.download = "haxor.apk"; // nama file TIDAK diuji
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  // 3) Delay lalu trigger download
+  setTimeout(() => {
+    const a = document.createElement('a');
+    a.href =
+      'data:text/plain,' +
+      'ANDROID_SOURCE_' +
+      'example.com_' +
+      'Y'.repeat(25000) +
+      '_END';
+    a.download = 'android-test.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }, 500); // variasikan: 100 / 300 / 500 / 900 ms
 };
 </script>
 
