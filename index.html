@@ -3,22 +3,17 @@
 <head>
   <meta charset="utf-8">
   <title>Popup Window + SaveFilePicker Test</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    button { padding: 10px 16px; font-size: 14px; }
-  </style>
 </head>
 <body>
 
 <h3>Popup Window → Save File Picker</h3>
 
-<button onclick="go()">Open Popup</button>
+<button id="openPopup">Open Popup</button>
 
 <script>
 function go() {
   console.log("User clicked button");
 
-  // 1️⃣ BUKA POPUP WINDOW (BUKAN TAB)
   const popup = window.open(
     "https://www.google.com",
     "popupTest",
@@ -26,15 +21,14 @@ function go() {
   );
 
   if (!popup) {
-    alert("Popup blocked by browser");
+    alert("Popup blocked");
     return;
   }
 
-  console.log("Popup window opened");
+  popup.blur();
+  window.focus();
 
-  // 2️⃣ Trigger Save File Picker setelah popup terbuka
   setTimeout(async () => {
-    console.log("Triggering showSaveFilePicker()");
     try {
       await window.showSaveFilePicker({
         suggestedName: "test.txt",
@@ -43,12 +37,17 @@ function go() {
           accept: { "text/plain": [".txt"] }
         }]
       });
-      console.log("Picker resolved");
+      console.log("Picker shown");
     } catch (e) {
-      console.log("Picker rejected/canceled:", e);
+      console.log("Picker canceled:", e);
     }
-  }, 1=3000);
+  }, 300);
 }
+
+// ⬇️ INI YANG PENTING
+document
+  .getElementById("openPopup")
+  .addEventListener("click", go);
 </script>
 
 </body>
