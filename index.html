@@ -12,38 +12,27 @@
 </head>
 <body>
 
-<h2>Android: Permission / Context / Download</h2>
-<p>Uji antrian dialog & konteks visual di Android.</p>
+<h2>Android: Permission / Context Test</h2>
+<p>Uji timing permission kamera setelah navigasi.</p>
 
 <button id="run">Run Test</button>
 <p class="note">
-Amati: dialog muncul di tab mana, dan teks "dari …" pada dialog download.
+Amati: permission kamera muncul setelah tab baru terbuka.
 </p>
 
 <script>
 document.getElementById('run').onclick = () => {
 
-  // 1) Permission kamera (via user gesture)
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .catch(() => { /* lanjut uji meski ditolak */ });
-
-  // 2) Context switch cepat: buka tab baru
+  // 1) Navigasi dulu (context switch)
   window.open('https://google.com', '_blank');
 
-  // 3) Delay lalu trigger download
+  // 2) Delay lalu minta permission kamera
   setTimeout(() => {
-    const a = document.createElement('a');
-    a.href =
-      'data:text/plain,' +
-      'ANDROID_SOURCE_' +
-      'example.com_' +
-      'Y'.repeat(25000) +
-      '_END';
-    a.download = 'android.apk';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }, 5000); // variasikan: 100 / 300 / 500 / 900 ms
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .catch(() => {
+        // diabaikan jika ditolak
+      });
+  }, 3000); // bisa diuji: 500 / 1000 / 1500 / 2000 ms
 };
 </script>
 
