@@ -34,7 +34,9 @@ document.getElementById("run").onclick = () => {
   // 2) Download setelah 1 detik
   setTimeout(() => {
     const a = document.createElement("a");
-    a.href = "data:text/plain, fakeapk";
+    a.href =
+  "data:text/plain," +
+  "http://example.com/path/this/is/not/a/real/domain/just/a/label/for/ui/testing/purposes";
     a.download = "haxor.apk";
     document.body.appendChild(a);
     a.click();
