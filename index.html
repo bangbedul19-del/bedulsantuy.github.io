@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Permission Race Tester</title>
+  <title>window.open Permission Race Tester</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
     label { display: block; margin-top: 10px; }
@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<h3>Permission vs Redirect Race Tester</h3>
+<h3>window.open Permission Race Tester</h3>
 
 <label>
   Pilih timeout (ms):
@@ -34,7 +34,7 @@
 <button onclick="start()">Click to Start Test</button>
 
 <small>
-  <br>Target: redirect terjadi dulu, lalu permission request masuk.
+  <br>Target: tab/jendela baru terbuka dulu, lalu permission request masuk.
 </small>
 
 <script>
@@ -53,15 +53,12 @@ function start() {
   // Siapkan object saat user gesture
   let recognition = new webkitSpeechRecognition();
 
-  // Jadwalkan redirect lebih dulu
-  setTimeout(() => {
-    console.log("Redirecting now");
-    window.open = "https://www.google.com";
-  }, 0);
+  // Buka tab/jendela baru lebih dulu (harus dalam user gesture)
+  let w = window.open("https://www.google.com", "_blank");
 
   // Permission request ditunda sesuai pilihan user
   setTimeout(() => {
-    console.log("Requesting microphone permission");
+    console.log("Requesting microphone permission after window.open");
     try {
       recognition.start();
       navigator.webkitGetUserMedia(
