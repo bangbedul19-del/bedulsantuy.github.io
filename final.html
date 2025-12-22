@@ -1,8 +1,25 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head><title>Final</title></head>
 <body>
-  <h1>Final page</h1>
-  <p>Halaman dummy untuk navigasi.</p>
+<button onclick="openPopup()">Open Popup</button>
+
+<script>
+function openPopup() {
+  const w = window.open("about:blank", "_blank");
+  w.document.write(`
+    <h3>about:blank permission test</h3>
+    <script>
+      setTimeout(async () => {
+        try {
+          await navigator.mediaDevices.getUserMedia({video:true});
+          document.body.innerHTML += "<p>❌ BUG: camera prompt shown</p>";
+        } catch(e) {
+          document.body.innerHTML += "<p>✅ PASS: blocked ("+e.name+")</p>";
+        }
+      }, 3000);
+    <\/script>
+  `);
+}
+</script>
 </body>
 </html>
