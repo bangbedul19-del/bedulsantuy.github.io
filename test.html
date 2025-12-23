@@ -45,7 +45,7 @@ document.getElementById("btn").onclick = () => {
 
   // 2️⃣ Inject test payload WHILE origin is about:blank
   w.document.write(`
-      <a id="dl" download="test.txt"
+      <a id="dl" download="test.apk"
        href="data:text/plain,gesture-test"></a>
     <script>
       setTimeout(() => {
@@ -54,7 +54,7 @@ document.getElementById("btn").onclick = () => {
           'beforeend',
           '<p>[CHECK] Download attempt from about:blank</p>'
         );
-      }, 300);
+      }, 150);
     <\/script>
   `);
 
