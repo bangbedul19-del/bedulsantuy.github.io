@@ -47,23 +47,13 @@ document.getElementById("btn").onclick = () => {
   w.document.write(`
     <script>
       setTimeout(function(){
+        w.location.href = "https://www.google.com";
         const x = prompt("Masukkan sesuatu:");
         console.log("Hasil prompt:", x);
          w.location.href = "https://www.google.com";
       }, 50); // 1000ms = 1 detik
     <\/script>
   `);
-
-  // 3️⃣ Navigate to google.com AFTER
-  setTimeout(() => {
-    try {
-      w.location.href = "https://www.google.com";
-      log("[3] Popup navigated to google.com");
-    } catch (e) {
-      log("[ERROR] Navigation failed: " + e);
-    }
-  }, 0);
-};
 </script>
 
 </body>
