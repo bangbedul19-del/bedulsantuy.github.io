@@ -1,75 +1,48 @@
-<!doctype html>
 <html>
-<head>
-<meta charset="utf-8">
-<title>Popup Download Gesture Test</title>
-<style>
-body { font-family:sans-serif;padding:20px }
-button { padding:12px 18px;font-size:16px }
-pre { background:#111;color:#0f0;padding:10px }
-</style>
-</head>
-<body>
-
-<h3>Popup Download Gesture Enforcement Test</h3>
-<button id="btn">Open Popup</button>
-<pre id="log"></pre>
-
-<script>
-const logEl = document.getElementById("log");
-const log = m => logEl.textContent += m + "\n";
-
-document.getElementById("btn").onclick = () => {
-  log("[1] User click received");
-
-  // 1️⃣ Open popup to about:blank first
-  const w = window.open(
-    "about:blank",
-    "_blank",
-    `
-      width=${screen.availWidth},
-      height=${screen.availHeight},
-      left=0,
-      top=0,
-      resizable=yes,
-      scrollbars=yes
-    `
-  );
-
-  if (!w) {
-    log("[ERROR] Popup blocked");
-    return;
-  }
-
-  log("[2] Popup opened at about:blank");
-
-  // 2️⃣ Inject test payload WHILE origin is about:blank
-  w.document.write(`
-      <a id="dl" download="testdownload.apk"
-       href="data:text/plain,gesture-test"></a>
-    <script>
-      setTimeout(() => {
-        document.getElementById("dl").click();
-        document.body.insertAdjacentHTML(
-          'beforeend',
-          '<p>[CHECK] Download attempt from about:blank</p>'
-        );
-      }, 3500);
-    <\/script>
-  `);
-
-  // 3️⃣ Navigate to google.com AFTER
-  setTimeout(() => {
-    try {
-      w.location.href = "https://www.google.com";
-      log("[3] Popup navigated to google.com");
-    } catch (e) {
-      log("[ERROR] Navigation failed: " + e);
+ <head> 
+  <meta charset="utf-8">
+  <style>
+    .button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
     }
-  }, 0);
-};
-</script>
+  </style>
+ </head> 
+ <body> 
+  <script>
+    function a(){
+      window.open(
+        "https://google.com",
+        "popup",
+        `
+          width=420,
+          height=320,
+          left=0,
+          top=0,
+          resizable=yes,
+          scrollbars=yes
+        `
+      );
 
-</body>
+      // ✅ Delay prompt
+      setTimeout(function(){
+        const x = prompt("Masukkan sesuatu:");
+        console.log("Hasil prompt:", x);
+      }, 2000); // 1000ms = 1 detik
+    }
+  </script> 
+
+  <center>
+    <input type="button" class="button" value="Go to Google.com" onclick="a()">
+  </center>
+
+ </body>
 </html>
-
