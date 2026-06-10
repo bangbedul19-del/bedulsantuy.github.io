@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UI Redressing Launcher</title>
+    <title>UI Redressing Launcher - Fixed</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -33,7 +33,8 @@
             cursor: pointer;
             z-index: 1;
         }
-        /* Iframe transparan yang dipasang tepat di atas tombol dasar */
+        
+        /* Iframe transparan awal */
         .overlay-frame {
             position: absolute;
             top: 0;
@@ -42,7 +43,26 @@
             height: 100%;
             border: none;
             z-index: 2;
-            opacity: 0.0; /* Ubah ke 0.4 saat melakukan uji coba koordinat agar area hijau terlihat */
+            opacity: 0.0; /* Ubah ke 0.4 jika ingin mempermudah kalibrasi posisi */
+        }
+
+        /* PERBAIKAN UTAMA:
+          Ketika iframe ini naik ke Top Layer via requestFullscreen,
+          paksa ukurannya untuk memenuhi seluruh layar browser, bukan hanya 250x55px.
+        */
+        .overlay-frame:fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+            opacity: 1.0 !important; /* Kembalikan opasitas menjadi terlihat penuh */
+            background-color: #ffffff !important;
+        }
+        
+        /* Dukungan untuk engine berbasis WebKit (Safari / iOS WebView) */
+        .overlay-frame:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100vh !important;
+            opacity: 1.0 !important;
+            background-color: #ffffff !important;
         }
     </style>
 </head>
